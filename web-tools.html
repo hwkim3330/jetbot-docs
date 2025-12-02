@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Tools - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="web-tools.html" class="active">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>개요</h4>
+                <ul>
+                    <li><a href="#intro" class="active">웹 인터페이스 개요</a></li>
+                    <li><a href="#architecture">아키텍처</a></li>
+                </ul>
+                <h4>rosbridge</h4>
+                <ul>
+                    <li><a href="#rosbridge">rosbridge_suite</a></li>
+                    <li><a href="#rosbridge-setup">설치 및 설정</a></li>
+                </ul>
+                <h4>시각화 도구</h4>
+                <ul>
+                    <li><a href="#rosboard">ROSboard</a></li>
+                    <li><a href="#foxglove">Foxglove Studio</a></li>
+                    <li><a href="#webviz">Webviz</a></li>
+                </ul>
+                <h4>JavaScript 라이브러리</h4>
+                <ul>
+                    <li><a href="#roslibjs">roslibjs</a></li>
+                    <li><a href="#ros2djs">ros2djs / ros3djs</a></li>
+                </ul>
+                <h4>웹 제어판</h4>
+                <ul>
+                    <li><a href="#custom-ui">커스텀 웹 UI</a></li>
+                    <li><a href="#joystick">가상 조이스틱</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>Web Tools</span>
+                </div>
+
+                <h1 id="intro">웹 기반 로봇 제어 도구</h1>
+                <p>
+                    JetBot을 웹 브라우저에서 모니터링하고 제어할 수 있는 다양한 도구들을 소개합니다.
+                    별도의 앱 설치 없이 스마트폰이나 태블릿에서 로봇을 조종할 수 있습니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>💡 활용 사례:</strong>
+                    <ul>
+                        <li>원격 모니터링: 카메라 영상, 센서 데이터 실시간 확인</li>
+                        <li>텔레오퍼레이션: 스마트폰에서 가상 조이스틱으로 로봇 조종</li>
+                        <li>디버깅: 토픽 데이터, TF 트리, 맵 시각화</li>
+                        <li>데모: 웹 대시보드로 로봇 상태 표시</li>
+                    </ul>
+                </div>
+
+                <h2 id="architecture">웹 통신 아키텍처</h2>
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                      WEB-BASED ROBOT CONTROL                        │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   ┌─────────────┐                          ┌─────────────────────┐ │
+│   │   Browser   │                          │    JetBot (ROS2)    │ │
+│   │             │                          │                     │ │
+│   │ ┌─────────┐ │     WebSocket (9090)     │  ┌───────────────┐ │ │
+│   │ │roslibjs │◄├─────────────────────────►│  │ rosbridge     │ │ │
+│   │ └─────────┘ │                          │  │ _server       │ │ │
+│   │             │                          │  └───────┬───────┘ │ │
+│   │ ┌─────────┐ │                          │          │         │ │
+│   │ │ros2djs/ │ │                          │  ┌───────▼───────┐ │ │
+│   │ │ros3djs  │ │                          │  │   ROS 2       │ │ │
+│   │ └─────────┘ │                          │  │   Topics      │ │ │
+│   │             │                          │  │               │ │ │
+│   │ ┌─────────┐ │     HTTP (8888)          │  │ /cmd_vel     │ │ │
+│   │ │ Web UI  │◄├─────────────────────────►│  │ /scan        │ │ │
+│   │ │(HTML/JS)│ │                          │  │ /image_raw   │ │ │
+│   │ └─────────┘ │                          │  │ /odom        │ │ │
+│   │             │                          │  └───────────────┘ │ │
+│   └─────────────┘                          └─────────────────────┘ │
+│                                                                     │
+│   ┌─────────────────────────────────────────────────────────────┐  │
+│   │                    Alternative Tools                         │  │
+│   │  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐│  │
+│   │  │ ROSboard │  │ Foxglove │  │  Webviz  │  │ Custom Flask ││  │
+│   │  │ :8888    │  │  Studio  │  │          │  │   Server     ││  │
+│   │  └──────────┘  └──────────┘  └──────────┘  └──────────────┘│  │
+│   └─────────────────────────────────────────────────────────────┘  │
+│                                                                     │
+└─────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="rosbridge">rosbridge_suite</h2>
+                <p>
+                    <strong>rosbridge</strong>는 ROS 시스템과 웹 브라우저 간의 WebSocket 통신을 제공하는
+                    핵심 패키지입니다. JSON 기반 프로토콜로 토픽 구독/발행, 서비스 호출이 가능합니다.
+                </p>
+
+                <h3 id="rosbridge-setup">설치 및 실행</h3>
+<pre><code># rosbridge_suite 설치
+sudo apt install ros-humble-rosbridge-suite
+
+# rosbridge 서버 실행 (포트 9090)
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+
+# 또는 직접 실행
+ros2 run rosbridge_server rosbridge_websocket</code></pre>
+
+                <h3>Launch 파일에 포함</h3>
+<pre><code># launch/web_interface.launch.py
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        # rosbridge WebSocket 서버
+        Node(
+            package='rosbridge_server',
+            executable='rosbridge_websocket',
+            name='rosbridge_websocket',
+            parameters=[{
+                'port': 9090,
+                'address': '',  # 모든 인터페이스
+                'retry_startup_delay': 5.0,
+            }]
+        ),
+
+        # Web Video Server (카메라 스트리밍)
+        Node(
+            package='web_video_server',
+            executable='web_video_server',
+            name='web_video_server',
+            parameters=[{
+                'port': 8080,
+                'ros_threads': 2,
+            }]
+        ),
+    ])</code></pre>
+
+                <h2 id="rosboard">ROSboard</h2>
+                <p>
+                    <a href="https://github.com/dheera/rosboard" target="_blank">ROSboard</a>는
+                    로봇을 웹 서버로 변환하여 모든 ROS 토픽을 브라우저에서 시각화할 수 있게 해주는 도구입니다.
+                </p>
+
+                <h3>특징</h3>
+                <ul>
+                    <li>설치 즉시 사용 가능 (Zero Configuration)</li>
+                    <li>자동 토픽 감지 및 시각화</li>
+                    <li>이미지, LaserScan, PointCloud, TF 등 다양한 메시지 타입 지원</li>
+                    <li>모바일 반응형 UI</li>
+                </ul>
+
+                <h3>설치 및 실행</h3>
+<pre><code># pip로 설치
+pip3 install rosboard
+
+# 실행
+ros2 run rosboard rosboard_node
+
+# 브라우저에서 접속
+# http://&lt;jetbot-ip&gt;:8888</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>✅ 추천:</strong> ROSboard는 설정이 거의 필요 없어 빠른 디버깅에 매우 유용합니다.
+                    JetBot IP의 8888 포트로 접속하면 바로 모든 토픽을 볼 수 있습니다.
+                </div>
+
+                <h2 id="foxglove">Foxglove Studio</h2>
+                <p>
+                    <a href="https://foxglove.dev/" target="_blank">Foxglove Studio</a>는
+                    고급 시각화 및 디버깅 도구로, 웹 브라우저나 데스크톱 앱에서 사용할 수 있습니다.
+                </p>
+
+                <h3>연결 방법</h3>
+                <ol>
+                    <li>JetBot에서 rosbridge 실행</li>
+                    <li><a href="https://studio.foxglove.dev/" target="_blank">studio.foxglove.dev</a> 접속</li>
+                    <li>"Open connection" → "Rosbridge (ROS 2)"</li>
+                    <li>WebSocket URL: <code>ws://&lt;jetbot-ip&gt;:9090</code></li>
+                </ol>
+
+                <h3>주요 기능</h3>
+                <ul>
+                    <li>3D 시각화 (URDF, PointCloud, LaserScan)</li>
+                    <li>이미지 패널 (압축/비압축)</li>
+                    <li>플롯 그래프 (시계열 데이터)</li>
+                    <li>토픽 브라우저</li>
+                    <li>ROS bag 재생</li>
+                </ul>
+
+                <h2 id="webviz">Webviz</h2>
+                <p>
+                    Cruise에서 개발한 오픈소스 웹 기반 시각화 도구입니다.
+                    Foxglove의 전신으로, 자체 호스팅이 가능합니다.
+                </p>
+
+<pre><code># Docker로 실행
+docker run -p 8080:8080 cruise/webviz
+
+# 브라우저에서 접속
+# http://localhost:8080</code></pre>
+
+                <h2 id="roslibjs">roslibjs - JavaScript ROS 라이브러리</h2>
+                <p>
+                    <a href="https://github.com/RobotWebTools/roslibjs" target="_blank">roslibjs</a>는
+                    웹 브라우저에서 ROS와 통신하기 위한 JavaScript 라이브러리입니다.
+                </p>
+
+                <h3>기본 사용법</h3>
+<pre><code>&lt;!-- CDN에서 로드 --&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"&gt;&lt;/script&gt;
+
+&lt;script&gt;
+// ROS 연결
+var ros = new ROSLIB.Ros({
+    url: 'ws://192.168.1.100:9090'  // JetBot IP
+});
+
+ros.on('connection', function() {
+    console.log('Connected to ROS');
+});
+
+ros.on('error', function(error) {
+    console.log('Error: ', error);
+});
+
+// 토픽 구독 예시: /scan
+var scanTopic = new ROSLIB.Topic({
+    ros: ros,
+    name: '/scan',
+    messageType: 'sensor_msgs/msg/LaserScan'
+});
+
+scanTopic.subscribe(function(message) {
+    console.log('Received scan with', message.ranges.length, 'points');
+});
+
+// 토픽 발행 예시: /cmd_vel
+var cmdVel = new ROSLIB.Topic({
+    ros: ros,
+    name: '/cmd_vel',
+    messageType: 'geometry_msgs/msg/Twist'
+});
+
+function sendVelocity(linear, angular) {
+    var twist = new ROSLIB.Message({
+        linear: { x: linear, y: 0, z: 0 },
+        angular: { x: 0, y: 0, z: angular }
+    });
+    cmdVel.publish(twist);
+}
+
+// 전진
+sendVelocity(0.2, 0);
+
+// 좌회전
+sendVelocity(0, 0.5);
+
+// 정지
+sendVelocity(0, 0);
+&lt;/script&gt;</code></pre>
+
+                <h2 id="ros2djs">ros2djs / ros3djs - 시각화 라이브러리</h2>
+
+                <h3>ros2djs (2D 시각화)</h3>
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/easeljs@1/lib/easeljs.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/ros2d@0/build/ros2d.min.js"&gt;&lt;/script&gt;
+
+&lt;div id="map"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// 2D 맵 뷰어
+var viewer = new ROS2D.Viewer({
+    divID: 'map',
+    width: 800,
+    height: 600
+});
+
+// OccupancyGrid 표시
+var gridClient = new ROS2D.OccupancyGridClient({
+    ros: ros,
+    rootObject: viewer.scene,
+    topic: '/map'
+});
+&lt;/script&gt;</code></pre>
+
+                <h3>ros3djs (3D 시각화)</h3>
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/three@0/build/three.min.js"&gt;&lt;/script&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/ros3d@0/build/ros3d.min.js"&gt;&lt;/script&gt;
+
+&lt;div id="viewer3d"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+// 3D 뷰어
+var viewer3d = new ROS3D.Viewer({
+    divID: 'viewer3d',
+    width: 800,
+    height: 600,
+    antialias: true
+});
+
+// TF 프레임 표시
+var tfClient = new ROSLIB.TFClient({
+    ros: ros,
+    fixedFrame: 'odom',
+    angularThres: 0.01,
+    transThres: 0.01
+});
+
+// LaserScan 표시
+var laserScan = new ROS3D.LaserScan({
+    ros: ros,
+    topic: '/scan',
+    tfClient: tfClient,
+    rootObject: viewer3d.scene,
+    material: { size: 0.05, color: 0xff0000 }
+});
+&lt;/script&gt;</code></pre>
+
+                <h2 id="custom-ui">커스텀 웹 제어판</h2>
+                <p>
+                    roslibjs를 활용하여 JetBot 전용 웹 제어판을 만들 수 있습니다.
+                </p>
+
+                <h3>간단한 제어판 HTML</h3>
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;JetBot Controller&lt;/title&gt;
+    &lt;style&gt;
+        .control-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 80px);
+            gap: 10px;
+            margin: 20px;
+        }
+        .btn {
+            padding: 20px;
+            font-size: 24px;
+            border: none;
+            border-radius: 8px;
+            background: #0066cc;
+            color: white;
+            cursor: pointer;
+        }
+        .btn:active { background: #004999; }
+        .status { margin: 20px; padding: 10px; background: #f0f0f0; }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;JetBot Controller&lt;/h1&gt;
+
+    &lt;div class="status" id="status"&gt;Connecting...&lt;/div&gt;
+
+    &lt;div class="control-pad"&gt;
+        &lt;div&gt;&lt;/div&gt;
+        &lt;button class="btn" onmousedown="move(0.3, 0)" onmouseup="stop()"&gt;⬆&lt;/button&gt;
+        &lt;div&gt;&lt;/div&gt;
+        &lt;button class="btn" onmousedown="move(0, 0.5)" onmouseup="stop()"&gt;⬅&lt;/button&gt;
+        &lt;button class="btn" onclick="stop()"&gt;⏹&lt;/button&gt;
+        &lt;button class="btn" onmousedown="move(0, -0.5)" onmouseup="stop()"&gt;➡&lt;/button&gt;
+        &lt;div&gt;&lt;/div&gt;
+        &lt;button class="btn" onmousedown="move(-0.3, 0)" onmouseup="stop()"&gt;⬇&lt;/button&gt;
+        &lt;div&gt;&lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/roslib@1/build/roslib.min.js"&gt;&lt;/script&gt;
+    &lt;script&gt;
+        var ros = new ROSLIB.Ros({ url: 'ws://' + location.hostname + ':9090' });
+
+        ros.on('connection', () =&gt; {
+            document.getElementById('status').innerText = 'Connected!';
+            document.getElementById('status').style.background = '#d4edda';
+        });
+
+        ros.on('error', () =&gt; {
+            document.getElementById('status').innerText = 'Error!';
+            document.getElementById('status').style.background = '#f8d7da';
+        });
+
+        var cmdVel = new ROSLIB.Topic({
+            ros: ros,
+            name: '/cmd_vel',
+            messageType: 'geometry_msgs/msg/Twist'
+        });
+
+        function move(linear, angular) {
+            cmdVel.publish(new ROSLIB.Message({
+                linear: { x: linear, y: 0, z: 0 },
+                angular: { x: 0, y: 0, z: angular }
+            }));
+        }
+
+        function stop() {
+            move(0, 0);
+        }
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <h2 id="joystick">가상 조이스틱</h2>
+                <p>
+                    <a href="https://github.com/nickswalker/nipplejs" target="_blank">nipplejs</a>
+                    라이브러리를 사용하면 터치스크린용 가상 조이스틱을 쉽게 구현할 수 있습니다.
+                </p>
+
+<pre><code>&lt;script src="https://cdn.jsdelivr.net/npm/nipplejs@0/dist/nipplejs.min.js"&gt;&lt;/script&gt;
+
+&lt;div id="joystick" style="width:200px; height:200px;"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+var joystick = nipplejs.create({
+    zone: document.getElementById('joystick'),
+    mode: 'static',
+    position: { left: '50%', top: '50%' },
+    color: '#0066cc'
+});
+
+joystick.on('move', function(evt, data) {
+    var linear = data.distance * Math.cos(data.angle.radian) * 0.005;
+    var angular = data.distance * Math.sin(data.angle.radian) * 0.01;
+    move(linear, angular);
+});
+
+joystick.on('end', function() {
+    stop();
+});
+&lt;/script&gt;</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>📱 모바일 팁:</strong> 가상 조이스틱은 스마트폰/태블릿에서 JetBot을 조종할 때 매우 유용합니다.
+                    터치 이벤트를 자동으로 처리해줍니다.
+                </div>
+
+                <h2>다음 단계</h2>
+                <ul>
+                    <li>Flask/FastAPI로 백엔드 서버 구축</li>
+                    <li>카메라 스트리밍 (web_video_server 또는 WebRTC)</li>
+                    <li>React/Vue.js로 SPA 대시보드 개발</li>
+                    <li>인증 및 보안 (HTTPS, JWT)</li>
+                </ul>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="ros2.html" class="btn btn-outline">← 이전: ROS2 구현</a>
+                        <a href="reference.html" class="btn btn-blue" style="margin-left: 1rem;">다음: 참고자료 →</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>
