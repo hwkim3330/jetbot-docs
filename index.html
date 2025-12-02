@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JetBot ROS2 Guide - Jetson Orin Nano</title>
+    <title>JetBot ROS2 Guide - KETI</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
 </head>
@@ -12,8 +12,11 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a href="index.html" class="logo">
-                <span class="logo-icon">🤖</span>
-                <span>JetBot ROS2</span>
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
             </a>
             <ul class="nav-links">
                 <li><a href="index.html" class="active">Home</a></li>
@@ -35,6 +38,9 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="hero-content">
+                <div class="hero-logo">
+                    <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI Logo">
+                </div>
                 <div class="hero-badge">
                     <span>🚀</span>
                     <span>NVIDIA Jetson Orin Nano + ROS 2 Humble</span>
@@ -67,10 +73,10 @@
                     <h3>하드웨어 설계</h3>
                     <p>전원 분배 네트워크(PDN), 레벨 시프터, 카메라 인터페이스, 모터 드라이버 연결 등 전기적 설계의 모든 것</p>
                 </a>
-                <a href="hardware.html#parts" class="feature-card">
+                <a href="hardware.html#bom" class="feature-card">
                     <div class="feature-icon">📦</div>
-                    <h3>부품 목록</h3>
-                    <p>Jetson Orin Nano 호환 부품 BOM(Bill of Materials) - 모터, LiDAR, 카메라, 배터리 및 추천 제품</p>
+                    <h3>부품 목록 (BOM)</h3>
+                    <p>Jetson Orin Nano 호환 부품 - 모터, LiDAR, 카메라, 배터리 및 가격 정보 포함</p>
                 </a>
                 <a href="software.html" class="feature-card">
                     <div class="feature-icon">💻</div>
@@ -170,11 +176,11 @@
                     <div class="feature-icon">1️⃣</div>
                     <h3>부품 준비</h3>
                     <p>
-                        • Jetson Orin Nano Developer Kit<br>
-                        • 3S/4S LiPo 배터리 (2200mAh+)<br>
-                        • PCA9685 + TB6612 모터 드라이버<br>
-                        • RPLIDAR A1/A2<br>
-                        • IMX219 카메라 + 22핀 어댑터
+                        • Jetson Orin Nano Dev Kit ($499)<br>
+                        • TT Motor 2개 ($5.90 x2)<br>
+                        • Motor Driver ($19.95)<br>
+                        • IMX219 Camera ($19.99)<br>
+                        • 10,000mAh PD Battery ($12.99)
                     </p>
                 </div>
                 <div class="feature-card">
@@ -209,12 +215,45 @@
                 </div>
             </div>
         </section>
+
+        <!-- Reference Link -->
+        <section class="features" style="padding-top: 0;">
+            <div class="section-title">
+                <h2>참고 자료</h2>
+                <p>공식 문서 및 커뮤니티 리소스</p>
+            </div>
+            <div class="feature-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <a href="https://jetbot.org/master/bill_of_materials_orin.html" class="feature-card" target="_blank">
+                    <div class="feature-icon">📋</div>
+                    <h3>JetBot.org BOM</h3>
+                    <p>공식 JetBot Orin 부품 목록</p>
+                </a>
+                <a href="https://developer.nvidia.com/embedded/jetson-orin-nano-developer-kit" class="feature-card" target="_blank">
+                    <div class="feature-icon">🟢</div>
+                    <h3>NVIDIA Developer</h3>
+                    <p>Jetson Orin Nano 공식 페이지</p>
+                </a>
+                <a href="https://docs.ros.org/en/humble/" class="feature-card" target="_blank">
+                    <div class="feature-icon">🤖</div>
+                    <h3>ROS 2 Humble Docs</h3>
+                    <p>ROS 2 공식 문서</p>
+                </a>
+                <a href="https://navigation.ros.org/" class="feature-card" target="_blank">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>Nav2 Documentation</h3>
+                    <p>Navigation2 스택 문서</p>
+                </a>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
     <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
         <p>
-            JetBot ROS2 Documentation &copy; 2024 |
+            JetBot ROS2 Documentation &copy; 2024 KETI |
             <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a> |
             Powered by NVIDIA Jetson
         </p>

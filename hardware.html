@@ -11,8 +11,11 @@
     <nav class="navbar">
         <div class="navbar-content">
             <a href="index.html" class="logo">
-                <span class="logo-icon">🤖</span>
-                <span>JetBot ROS2</span>
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
             </a>
             <ul class="nav-links">
                 <li><a href="index.html">Home</a></li>
@@ -333,75 +336,214 @@ sudo i2cdetect -y -r 7
                 </div>
 
                 <h2 id="bom">부품 목록 (BOM)</h2>
-                <table>
+                <p>
+                    아래는 <a href="https://jetbot.org/master/bill_of_materials_orin.html" target="_blank">JetBot.org 공식 BOM</a>을
+                    참고한 Jetson Orin Nano JetBot 부품 목록입니다.
+                </p>
+
+                <h3>Core Components</h3>
+                <table class="bom-table">
                     <thead>
                         <tr>
-                            <th>카테고리</th>
                             <th>부품명</th>
-                            <th>사양</th>
+                            <th>설명</th>
                             <th>수량</th>
+                            <th>가격 (USD)</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td rowspan="2">메인 보드</td>
-                            <td>Jetson Orin Nano Dev Kit</td>
-                            <td>8GB 권장</td>
+                            <td><strong>Jetson Orin Nano 8GB Dev Kit</strong></td>
+                            <td>메인 컴퓨팅 모듈</td>
                             <td>1</td>
+                            <td class="price">$499.00</td>
                         </tr>
                         <tr>
-                            <td>NVMe SSD</td>
-                            <td>256GB 이상</td>
+                            <td>Micro SD Card (128GB)</td>
+                            <td>부팅 및 저장 (NVMe 권장)</td>
                             <td>1</td>
+                            <td class="price">$14.95</td>
                         </tr>
                         <tr>
-                            <td rowspan="3">전원</td>
-                            <td>LiPo 배터리</td>
-                            <td>3S 2200mAh 30C+</td>
-                            <td>1</td>
-                        </tr>
-                        <tr>
-                            <td>5V UBEC</td>
-                            <td>3A~5A 출력</td>
-                            <td>1</td>
-                        </tr>
-                        <tr>
-                            <td>LiPo 충전기</td>
-                            <td>밸런스 충전 지원</td>
-                            <td>1</td>
-                        </tr>
-                        <tr>
-                            <td rowspan="2">모터 시스템</td>
-                            <td>DC 기어 모터</td>
-                            <td>6V~12V, 엔코더 옵션</td>
+                            <td><strong>TT Motor</strong></td>
+                            <td>DC 기어 모터 (200RPM)</td>
                             <td>2</td>
+                            <td class="price">$5.90 x2</td>
                         </tr>
                         <tr>
-                            <td>모터 드라이버</td>
-                            <td>PCA9685 + TB6612</td>
+                            <td><strong>Motor Driver</strong></td>
+                            <td>Adafruit DRV8833 또는 TB6612</td>
                             <td>1</td>
+                            <td class="price">$19.95</td>
                         </tr>
                         <tr>
-                            <td rowspan="2">센서</td>
-                            <td>RPLIDAR A1/A2</td>
-                            <td>360도 2D 스캔</td>
+                            <td>Caster Ball (1")</td>
+                            <td>후방 지지 볼</td>
                             <td>1</td>
+                            <td class="price">$10.99</td>
                         </tr>
                         <tr>
-                            <td>IMX219 카메라</td>
-                            <td>Pi Camera v2 호환</td>
+                            <td>PiOLED Display</td>
+                            <td>128x32 I2C OLED (선택)</td>
                             <td>1</td>
+                            <td class="price">$13.45</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Power System</h3>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>부품명</th>
+                            <th>설명</th>
+                            <th>수량</th>
+                            <th>가격 (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>PD Battery (10,000mAh)</strong></td>
+                            <td>USB-C PD 20W 지원 보조배터리</td>
+                            <td>1</td>
+                            <td class="price">$12.99</td>
                         </tr>
                         <tr>
-                            <td rowspan="2">케이블/어댑터</td>
+                            <td>USB-C PD to DC 5.5mm Cable</td>
+                            <td>직각 케이블 권장</td>
+                            <td>1</td>
+                            <td class="price">$10.99</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-info">
+                    <strong>💡 대안:</strong> PD 보조배터리 대신 <strong>3S LiPo 배터리 (2200mAh, 30C+)</strong>를
+                    사용하면 더 안정적인 전원 공급이 가능합니다. 이 경우 별도의 DC-DC 컨버터가 필요할 수 있습니다.
+                </div>
+
+                <h3>Camera</h3>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>부품명</th>
+                            <th>설명</th>
+                            <th>수량</th>
+                            <th>가격 (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>IMX219 Camera (175° FoV)</strong></td>
+                            <td>ArduCam B0392 또는 호환 제품</td>
+                            <td>1</td>
+                            <td class="price">$19.99</td>
+                        </tr>
+                        <tr>
                             <td>CSI 어댑터 케이블</td>
-                            <td>15핀 → 22핀</td>
+                            <td>15핀 → 22핀 변환</td>
                             <td>1</td>
+                            <td class="price">~$5.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Wheels (택 1)</h3>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>옵션</th>
+                            <th>부품명</th>
+                            <th>가격 (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Option 1</td>
+                            <td>60mm Wheels + 3D Printed Caster</td>
+                            <td class="price">~$5.00</td>
                         </tr>
                         <tr>
-                            <td>레벨 시프터</td>
-                            <td>TXB0108 또는 BSS138</td>
-                            <td>1</td>
+                            <td>Option 2</td>
+                            <td>65mm Wheels + 3D Printed Caster</td>
+                            <td class="price">~$3.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Assembly Hardware</h3>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>부품명</th>
+                            <th>수량</th>
+                            <th>가격 (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>M2 Self-Tapping Screws</td>
+                            <td>20</td>
+                            <td class="price">$1.40</td>
+                        </tr>
+                        <tr>
+                            <td>M3 Screws (25mm)</td>
+                            <td>4</td>
+                            <td class="price">$0.47</td>
+                        </tr>
+                        <tr>
+                            <td>M3 Nuts</td>
+                            <td>4</td>
+                            <td class="price">$0.20</td>
+                        </tr>
+                        <tr>
+                            <td>Female Jumper Wires</td>
+                            <td>4</td>
+                            <td class="price">$0.56</td>
+                        </tr>
+                        <tr>
+                            <td>Adhesive Poster Strips</td>
+                            <td>2</td>
+                            <td class="price">$0.14</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>3D Printed Parts</h3>
+                <ul>
+                    <li><strong>Chassis</strong> - 메인 프레임 (STL 파일 제공)</li>
+                    <li><strong>Camera Mount</strong> - 카메라 거치대</li>
+                    <li><strong>Caster Parts</strong> - 바퀴 크기에 따른 캐스터 부품</li>
+                </ul>
+
+                <div class="alert alert-success">
+                    <strong>💰 예상 총 비용:</strong> 약 <strong>$620 ~ $650 USD</strong> (3D 프린팅 비용 별도)
+                </div>
+
+                <h3>Optional: LiDAR (자율주행용)</h3>
+                <table class="bom-table">
+                    <thead>
+                        <tr>
+                            <th>부품명</th>
+                            <th>설명</th>
+                            <th>가격 (USD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>RPLIDAR A1</strong></td>
+                            <td>360° 2D LiDAR, 12m 범위</td>
+                            <td class="price">~$99</td>
+                        </tr>
+                        <tr>
+                            <td>RPLIDAR A2</td>
+                            <td>360° 2D LiDAR, 18m 범위, 고속</td>
+                            <td class="price">~$319</td>
+                        </tr>
+                        <tr>
+                            <td>YDLIDAR X4</td>
+                            <td>저가형 대안, 10m 범위</td>
+                            <td class="price">~$69</td>
                         </tr>
                     </tbody>
                 </table>
@@ -460,8 +602,11 @@ sudo udevadm trigger</code></pre>
     </main>
 
     <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
         <p>
-            JetBot ROS2 Documentation &copy; 2024 |
+            JetBot ROS2 Documentation &copy; 2024 KETI |
             <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
         </p>
     </footer>
