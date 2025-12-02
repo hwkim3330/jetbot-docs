@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Setup - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🤖</span>
+                <span>JetBot ROS2</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html" class="active">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>JetPack 설치</h4>
+                <ul>
+                    <li><a href="#jetpack" class="active">JetPack 6 개요</a></li>
+                    <li><a href="#nvme">NVMe SSD 부팅</a></li>
+                    <li><a href="#sdk-manager">SDK Manager 사용</a></li>
+                    <li><a href="#post-install">설치 후 설정</a></li>
+                </ul>
+                <h4 id="ros2">ROS 2 설치</h4>
+                <ul>
+                    <li><a href="#ros2-intro">ROS 2 Humble 개요</a></li>
+                    <li><a href="#ros2-install">바이너리 설치</a></li>
+                    <li><a href="#ros2-env">환경 설정</a></li>
+                    <li><a href="#workspace">워크스페이스 생성</a></li>
+                </ul>
+                <h4>개발 도구</h4>
+                <ul>
+                    <li><a href="#python-libs">Python 라이브러리</a></li>
+                    <li><a href="#isaac-ros">Isaac ROS</a></li>
+                    <li><a href="#vscode">VS Code Remote</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>Software Setup</span>
+                </div>
+
+                <h1 id="jetpack">소프트웨어 환경 구축</h1>
+                <p>
+                    Orin Nano의 성능을 온전히 활용하기 위해 JetPack 6.x 버전을 설치해야 합니다.
+                    이는 Ubuntu 22.04 LTS를 기반으로 하며, ROS 2 Humble을 네이티브로 지원합니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>💡 핵심 변경사항:</strong> JetPack 6은 Ubuntu 22.04를 사용하므로
+                    ROS 1 (Melodic/Noetic)은 더 이상 지원되지 않습니다. ROS 2 Humble로 완전히 전환해야 합니다.
+                </div>
+
+                <h2>JetPack 6 vs JetPack 4/5 비교</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>JetPack 4.x</th>
+                            <th>JetPack 5.x</th>
+                            <th>JetPack 6.x</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Ubuntu 버전</td>
+                            <td>18.04</td>
+                            <td>20.04</td>
+                            <td class="spec-highlight">22.04</td>
+                        </tr>
+                        <tr>
+                            <td>Linux 커널</td>
+                            <td>4.9</td>
+                            <td>5.10</td>
+                            <td class="spec-highlight">5.15+</td>
+                        </tr>
+                        <tr>
+                            <td>CUDA</td>
+                            <td>10.2</td>
+                            <td>11.4</td>
+                            <td class="spec-highlight">12.2</td>
+                        </tr>
+                        <tr>
+                            <td>ROS 지원</td>
+                            <td>Melodic</td>
+                            <td>Noetic/Foxy</td>
+                            <td class="spec-highlight">Humble (Tier 1)</td>
+                        </tr>
+                        <tr>
+                            <td>Orin Nano 지원</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td class="spec-highlight">완전 지원</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="nvme">NVMe SSD 부팅 설정</h2>
+                <div class="alert alert-warning">
+                    <strong>⚠️ 강력 권장:</strong> SD 카드 대신 <strong>NVMe SSD</strong>를 부팅 드라이브로 사용하세요.
+                    SD 카드는 I/O 병목으로 인해 ROS 2 컴파일 및 SLAM 맵 로딩 시 심각한 성능 저하를 유발합니다.
+                </div>
+
+                <h3>NVMe SSD 장점</h3>
+                <ul>
+                    <li><strong>읽기/쓰기 속도:</strong> SD 카드 대비 10~20배 향상</li>
+                    <li><strong>colcon 빌드:</strong> 빌드 시간 대폭 단축</li>
+                    <li><strong>SLAM:</strong> 대용량 맵 데이터 실시간 처리 가능</li>
+                    <li><strong>내구성:</strong> 쓰기 횟수 제한이 훨씬 높음</li>
+                </ul>
+
+                <h2 id="sdk-manager">SDK Manager를 통한 JetPack 설치</h2>
+                <p>호스트 PC(Ubuntu)에서 NVIDIA SDK Manager를 사용하여 Orin Nano를 플래싱합니다.</p>
+
+                <h3>사전 요구사항</h3>
+                <ul>
+                    <li>호스트 PC: Ubuntu 20.04 또는 22.04 (x86_64)</li>
+                    <li>USB-C 케이블 (데이터 통신 지원)</li>
+                    <li>안정적인 인터넷 연결 (다운로드 ~15GB)</li>
+                </ul>
+
+                <h3>설치 단계</h3>
+<pre><code># 1. SDK Manager 다운로드 및 설치 (호스트 PC)
+# https://developer.nvidia.com/sdk-manager 에서 .deb 다운로드
+sudo dpkg -i sdkmanager_*.deb
+sudo apt --fix-broken install
+
+# 2. SDK Manager 실행
+sdkmanager
+
+# 3. Orin Nano를 Recovery Mode로 진입
+#    - 점퍼로 FC_REC 핀과 GND 연결
+#    - USB-C로 호스트 PC에 연결
+#    - 전원 연결
+
+# 4. SDK Manager에서 다음 선택:
+#    - Target Hardware: Jetson Orin Nano
+#    - Target Operating System: JetPack 6.x
+#    - Components: 전체 선택 (CUDA, cuDNN, TensorRT, etc.)
+
+# 5. 플래싱 시작 (약 30분~1시간 소요)</code></pre>
+
+                <h2 id="post-install">설치 후 기본 설정</h2>
+
+                <h3>시스템 업데이트</h3>
+<pre><code>sudo apt update && sudo apt upgrade -y</code></pre>
+
+                <h3>한글 입력 환경 (선택)</h3>
+<pre><code># ibus-hangul 설치
+sudo apt install -y ibus-hangul fonts-nanum
+
+# ibus 설정
+ibus-setup
+# Korean - Hangul 추가</code></pre>
+
+                <h3>전원 모드 설정</h3>
+<pre><code># 현재 전원 모드 확인
+sudo nvpmodel -q
+
+# 15W 최대 성능 모드 설정
+sudo nvpmodel -m 0
+
+# 7W 저전력 모드 (배터리 절약)
+sudo nvpmodel -m 1</code></pre>
+
+                <h3>jetson-io 핀 설정</h3>
+<pre><code># GPIO 핀 구성 도구 실행
+sudo /opt/nvidia/jetson-io/jetson-io.py
+
+# I2C, SPI, UART 등 활성화 가능</code></pre>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="ros2-intro">ROS 2 Humble Hawksbill 설치</h1>
+                <p>
+                    Ubuntu 22.04는 ROS 2 Humble을 <strong>Tier 1</strong>으로 지원하므로,
+                    소스 빌드 없이 바이너리 패키지로 설치할 수 있습니다.
+                </p>
+
+                <div class="alert alert-success">
+                    <strong>✅ 장점:</strong> 바이너리 설치는 소스 빌드 대비 시간이 대폭 단축되고,
+                    시스템 유지보수가 훨씬 용이합니다.
+                </div>
+
+                <h2 id="ros2-install">ROS 2 Humble 바이너리 설치</h2>
+
+                <h3>1. 로케일 설정</h3>
+<pre><code># UTF-8 로케일 확인
+locale
+
+# 필요시 로케일 설정
+sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8</code></pre>
+
+                <h3>2. ROS 2 소스 추가</h3>
+<pre><code># 필요 패키지 설치
+sudo apt update && sudo apt install -y curl gnupg lsb-release
+
+# ROS 2 GPG 키 추가
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key \
+    -o /usr/share/keyrings/ros-archive-keyring.gpg
+
+# 저장소 추가
+echo "deb [arch=$(dpkg --print-architecture) \
+    signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] \
+    http://packages.ros.org/ros2/ubuntu \
+    $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | \
+    sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null</code></pre>
+
+                <h3>3. ROS 2 패키지 설치</h3>
+<pre><code># 패키지 목록 업데이트
+sudo apt update
+
+# ROS 2 Humble Desktop 설치 (권장)
+# RViz2, 데모 노드, GUI 도구 포함
+sudo apt install -y ros-humble-desktop
+
+# 또는 최소 설치 (헤드리스 환경)
+# sudo apt install -y ros-humble-ros-base
+
+# 개발 도구 설치
+sudo apt install -y ros-dev-tools python3-colcon-common-extensions</code></pre>
+
+                <h3>4. rosdep 초기화</h3>
+<pre><code># rosdep 초기화 (최초 1회)
+sudo rosdep init
+
+# rosdep 업데이트
+rosdep update</code></pre>
+
+                <h2 id="ros2-env">환경 설정</h2>
+
+                <h3>자동 환경 로드 설정</h3>
+<pre><code># ~/.bashrc에 추가
+echo "source /opt/ros/humble/setup.bash" >> ~/.bashrc
+
+# 현재 세션에 적용
+source ~/.bashrc
+
+# 설치 확인
+ros2 --help</code></pre>
+
+                <h3>환경 변수 확인</h3>
+<pre><code># ROS 2 환경 변수 확인
+printenv | grep -i ROS
+
+# 예상 출력:
+# ROS_DISTRO=humble
+# ROS_PYTHON_VERSION=3
+# ROS_VERSION=2</code></pre>
+
+                <h2 id="workspace">워크스페이스 생성</h2>
+                <p>JetBot 프로젝트를 위한 ROS 2 워크스페이스를 생성합니다.</p>
+
+<pre><code># 워크스페이스 디렉토리 생성
+mkdir -p ~/jetbot_ws/src
+cd ~/jetbot_ws
+
+# 워크스페이스 빌드 (초기화)
+colcon build
+
+# 워크스페이스 환경 로드
+source install/setup.bash
+
+# ~/.bashrc에 추가 (선택)
+echo "source ~/jetbot_ws/install/setup.bash" >> ~/.bashrc</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>💡 팁:</strong> 빌드 시 <code>--symlink-install</code> 옵션을 사용하면
+                    Python 스크립트 수정 시 재빌드 없이 바로 반영됩니다.
+<pre><code>colcon build --symlink-install</code></pre>
+                </div>
+
+                <h2 id="python-libs">Python 라이브러리 설치</h2>
+                <p>JetBot 제어를 위한 필수 Python 라이브러리를 설치합니다.</p>
+
+<pre><code># I2C 및 PWM 제어
+pip3 install adafruit-circuitpython-pca9685
+pip3 install adafruit-circuitpython-motor
+pip3 install smbus2
+
+# Jetson GPIO
+pip3 install Jetson.GPIO
+
+# 데이터 처리 및 시각화
+pip3 install numpy scipy matplotlib
+
+# 시리얼 통신 (LiDAR)
+pip3 install pyserial</code></pre>
+
+                <div class="alert alert-warning">
+                    <strong>⚠️ 주의:</strong> adafruit-circuitpython 라이브러리 사용 시
+                    <strong>bus_id=7</strong> 파라미터를 명시해야 Orin Nano에서 정상 동작합니다.
+                </div>
+
+                <h2 id="isaac-ros">Isaac ROS 설치 (선택)</h2>
+                <p>
+                    NVIDIA Isaac ROS는 GPU 가속을 활용한 고성능 ROS 2 패키지 모음입니다.
+                    Zero-Copy 이미지 처리로 카메라 파이프라인 지연을 최소화합니다.
+                </p>
+
+<pre><code># Isaac ROS 저장소 클론
+cd ~/jetbot_ws/src
+git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_common.git
+
+# Argus Camera 패키지 (CSI 카메라용)
+git clone https://github.com/NVIDIA-ISAAC-ROS/isaac_ros_argus_camera.git
+
+# 의존성 설치
+cd ~/jetbot_ws
+rosdep install --from-paths src --ignore-src -y
+
+# 빌드
+colcon build --symlink-install</code></pre>
+
+                <h2 id="vscode">VS Code Remote 개발</h2>
+                <p>호스트 PC에서 SSH를 통해 Jetson에 원격 접속하여 개발할 수 있습니다.</p>
+
+                <h3>Jetson에서 SSH 설정</h3>
+<pre><code># SSH 서버 설치 및 시작
+sudo apt install -y openssh-server
+sudo systemctl enable ssh
+sudo systemctl start ssh
+
+# IP 주소 확인
+ip addr show</code></pre>
+
+                <h3>VS Code 설정</h3>
+                <ol>
+                    <li>VS Code에서 <strong>Remote - SSH</strong> 확장 설치</li>
+                    <li><code>F1</code> → "Remote-SSH: Connect to Host"</li>
+                    <li><code>username@jetson-ip-address</code> 입력</li>
+                    <li>ROS 2 확장 설치 (원격 호스트에)</li>
+                </ol>
+
+                <div class="alert alert-success">
+                    <strong>✅ 준비 완료:</strong> 이제 JetPack과 ROS 2 환경이 구성되었습니다.
+                    다음 단계에서는 실제 ROS 2 노드 구현을 진행합니다.
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="hardware.html" class="btn btn-secondary">← 이전: 하드웨어 설계</a>
+                        <a href="ros2.html" class="btn btn-primary" style="margin-left: 1rem;">다음: ROS2 구현 →</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

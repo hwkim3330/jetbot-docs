@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reference - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🤖</span>
+                <span>JetBot ROS2</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="reference.html" class="active">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>트러블슈팅</h4>
+                <ul>
+                    <li><a href="#troubleshooting" class="active">일반 문제</a></li>
+                    <li><a href="#i2c-issues">I2C 문제</a></li>
+                    <li><a href="#camera-issues">카메라 문제</a></li>
+                    <li><a href="#lidar-issues">LiDAR 문제</a></li>
+                    <li><a href="#power-issues">전원 문제</a></li>
+                </ul>
+                <h4>핀맵</h4>
+                <ul>
+                    <li><a href="#pinout">40핀 헤더</a></li>
+                    <li><a href="#i2c-map">I2C 매핑</a></li>
+                </ul>
+                <h4>명령어 참조</h4>
+                <ul>
+                    <li><a href="#commands">유용한 명령어</a></li>
+                    <li><a href="#ros2-commands">ROS 2 명령어</a></li>
+                </ul>
+                <h4>외부 링크</h4>
+                <ul>
+                    <li><a href="#links">참고 문서</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>Reference</span>
+                </div>
+
+                <h1 id="troubleshooting">트러블슈팅 가이드</h1>
+                <p>JetBot 구축 중 자주 발생하는 문제와 해결 방법을 정리했습니다.</p>
+
+                <h2 id="i2c-issues">I2C 관련 문제</h2>
+
+                <h3>문제: i2cdetect에서 장치가 감지되지 않음</h3>
+                <div class="alert alert-info">
+                    <strong>증상:</strong> <code>sudo i2cdetect -y -r 7</code> 실행 시 빈 테이블만 표시됨
+                </div>
+
+                <p><strong>해결 방법:</strong></p>
+                <ol>
+                    <li>
+                        <strong>버스 번호 확인:</strong> Orin Nano는 기본적으로 <code>i2c-7</code>을 사용합니다.
+<pre><code># 사용 가능한 I2C 버스 확인
+ls /dev/i2c-*
+
+# 각 버스 스캔
+for i in 0 1 7 8; do
+    echo "=== Bus $i ==="
+    sudo i2cdetect -y -r $i 2>/dev/null || echo "Not available"
+done</code></pre>
+                    </li>
+                    <li>
+                        <strong>핀 기능 설정:</strong>
+<pre><code># jetson-io 도구 실행
+sudo /opt/nvidia/jetson-io/jetson-io.py
+
+# Configure Jetson 40pin Header 선택
+# I2C 활성화 후 저장 및 재부팅</code></pre>
+                    </li>
+                    <li>
+                        <strong>배선 확인:</strong>
+                        <ul>
+                            <li>SDA: Pin 3</li>
+                            <li>SCL: Pin 5</li>
+                            <li>VCC: 3.3V (Pin 1 또는 17) - <strong>5V 사용 금지!</strong></li>
+                            <li>GND: Pin 6, 9, 14, 20, 25, 30, 34, 39 중 하나</li>
+                        </ul>
+                    </li>
+                </ol>
+
+                <h3>문제: "Device or resource busy" 오류</h3>
+<pre><code># 해당 버스를 사용 중인 프로세스 확인
+sudo fuser /dev/i2c-7
+
+# 프로세스 종료
+sudo kill -9 &lt;PID&gt;</code></pre>
+
+                <h2 id="camera-issues">카메라 관련 문제</h2>
+
+                <h3>문제: /dev/video0이 생성되지 않음</h3>
+                <ol>
+                    <li>
+                        <strong>케이블 연결 확인:</strong>
+                        <ul>
+                            <li>22핀 어댑터 케이블 사용 확인</li>
+                            <li>접점 방향(금속 면) 확인</li>
+                            <li>Pin 1 위치 확인</li>
+                        </ul>
+                    </li>
+                    <li>
+                        <strong>카메라 감지 확인:</strong>
+<pre><code># dmesg에서 카메라 관련 메시지 확인
+dmesg | grep -i imx
+
+# v4l2 장치 목록
+v4l2-ctl --list-devices
+
+# GStreamer 테스트
+gst-launch-1.0 nvarguscamerasrc ! 'video/x-raw(memory:NVMM),width=640,height=480' ! nvvidconv ! xvimagesink</code></pre>
+                    </li>
+                </ol>
+
+                <h3>문제: "Failed to create capture session" 오류</h3>
+<pre><code># argus 데몬 재시작
+sudo systemctl restart nvargus-daemon
+
+# 또는 직접 실행
+sudo service nvargus-daemon stop
+sudo nvargus-daemon &</code></pre>
+
+                <h2 id="lidar-issues">LiDAR 관련 문제</h2>
+
+                <h3>문제: /dev/ttyUSB0이 없거나 권한 오류</h3>
+<pre><code># USB 장치 확인
+lsusb | grep -i cp210
+
+# 장치 연결 확인
+ls -la /dev/ttyUSB*
+
+# 권한 부여 (임시)
+sudo chmod 666 /dev/ttyUSB0
+
+# udev 규칙 생성 (영구)
+sudo tee /etc/udev/rules.d/99-rplidar.rules << 'EOF'
+KERNEL=="ttyUSB*", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", MODE="0666", GROUP="dialout", SYMLINK+="rplidar"
+EOF
+
+# udev 규칙 적용
+sudo udevadm control --reload-rules
+sudo udevadm trigger</code></pre>
+
+                <h3>문제: LiDAR가 회전하지만 데이터가 없음</h3>
+<pre><code># 보드레이트 확인 (A1: 115200, A2: 256000)
+ros2 launch sllidar_ros2 sllidar_a1_launch.py \
+    serial_port:=/dev/rplidar \
+    serial_baudrate:=115200
+
+# 토픽 확인
+ros2 topic echo /scan --once</code></pre>
+
+                <h2 id="power-issues">전원 관련 문제</h2>
+
+                <h3>문제: 모터 동작 시 시스템 재부팅</h3>
+                <p><strong>원인:</strong> 브라운아웃 (전압 강하)</p>
+                <p><strong>해결 방법:</strong></p>
+                <ul>
+                    <li>고방전률(30C+) LiPo 배터리 사용</li>
+                    <li>전원 라인에 470uF 이상 전해 커패시터 추가</li>
+                    <li>모터 전원과 Jetson 전원 분리 (별도 UBEC)</li>
+                    <li>스타 그라운드 배선</li>
+                </ul>
+
+                <h3>문제: USB 장치가 간헐적으로 연결 끊김</h3>
+                <p><strong>원인:</strong> 전원 노이즈 또는 부족한 전류 공급</p>
+<pre><code># USB 전원 로그 확인
+dmesg | grep -i usb
+
+# 해결: 외부 전원 USB 허브 사용
+# 또는 별도 5V 전원으로 LiDAR 공급</code></pre>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="pinout">Jetson Orin Nano 40핀 헤더</h1>
+
+                <table class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>핀 번호</th>
+                            <th>기능</th>
+                            <th>전압</th>
+                            <th>용도</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td class="pin-high">3.3V</td>
+                            <td>3.3V</td>
+                            <td>PCA9685 VCC</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td class="pin-warning">5V</td>
+                            <td>5V</td>
+                            <td>고전력 주변기기 (주의 필요)</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td class="pin-low">I2C_SDA (Bus 7)</td>
+                            <td>3.3V</td>
+                            <td>I2C 데이터</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td class="pin-warning">5V</td>
+                            <td>5V</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td class="pin-low">I2C_SCL (Bus 7)</td>
+                            <td>3.3V</td>
+                            <td>I2C 클럭</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>GND</td>
+                            <td>-</td>
+                            <td>접지</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>GPIO</td>
+                            <td>3.3V</td>
+                            <td>범용 입출력</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td class="pin-low">UART_TXD</td>
+                            <td>3.3V</td>
+                            <td>시리얼 송신</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>GND</td>
+                            <td>-</td>
+                            <td>접지</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td class="pin-low">UART_RXD</td>
+                            <td>3.3V</td>
+                            <td>시리얼 수신</td>
+                        </tr>
+                        <tr>
+                            <td>17</td>
+                            <td class="pin-high">3.3V</td>
+                            <td>3.3V</td>
+                            <td>전원</td>
+                        </tr>
+                        <tr>
+                            <td>19</td>
+                            <td class="pin-low">SPI_MOSI</td>
+                            <td>3.3V</td>
+                            <td>SPI 데이터 출력</td>
+                        </tr>
+                        <tr>
+                            <td>21</td>
+                            <td class="pin-low">SPI_MISO</td>
+                            <td>3.3V</td>
+                            <td>SPI 데이터 입력</td>
+                        </tr>
+                        <tr>
+                            <td>23</td>
+                            <td class="pin-low">SPI_CLK</td>
+                            <td>3.3V</td>
+                            <td>SPI 클럭</td>
+                        </tr>
+                        <tr>
+                            <td>24</td>
+                            <td class="pin-low">SPI_CS0</td>
+                            <td>3.3V</td>
+                            <td>SPI 칩 선택 0</td>
+                        </tr>
+                        <tr>
+                            <td>26</td>
+                            <td class="pin-low">SPI_CS1</td>
+                            <td>3.3V</td>
+                            <td>SPI 칩 선택 1</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-danger">
+                    <strong>🚨 경고:</strong> 모든 GPIO 핀은 <strong>3.3V 전용</strong>입니다!
+                    5V 신호를 직접 연결하면 보드가 손상됩니다. 반드시 레벨 시프터를 사용하세요.
+                </div>
+
+                <h2 id="i2c-map">I2C 버스 매핑 비교</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>물리적 핀</th>
+                            <th>Jetson Nano</th>
+                            <th>Jetson Orin Nano</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pin 3 (SDA), Pin 5 (SCL)</td>
+                            <td>i2c-1</td>
+                            <td class="spec-highlight">i2c-7</td>
+                        </tr>
+                        <tr>
+                            <td>Pin 27 (SDA), Pin 28 (SCL)</td>
+                            <td>i2c-0</td>
+                            <td>i2c-1</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="commands">유용한 명령어</h1>
+
+                <h2>시스템 정보</h2>
+<pre><code># Jetson 모델 및 JetPack 버전 확인
+cat /etc/nv_tegra_release
+
+# L4T 버전 확인
+head -n 1 /etc/nv_tegra_release
+
+# 전원 모드 확인
+sudo nvpmodel -q
+
+# GPU 및 시스템 모니터링
+tegrastats
+
+# 온도 확인
+cat /sys/devices/virtual/thermal/thermal_zone*/temp</code></pre>
+
+                <h2>I2C 도구</h2>
+<pre><code># I2C 버스 스캔
+sudo i2cdetect -y -r 7
+
+# I2C 장치에서 레지스터 읽기
+sudo i2cget -y 7 0x40 0x00
+
+# I2C 장치에 레지스터 쓰기
+sudo i2cset -y 7 0x40 0x00 0x10
+
+# I2C 덤프
+sudo i2cdump -y 7 0x40</code></pre>
+
+                <h2>GPIO 도구</h2>
+<pre><code># GPIO 핀 상태 확인
+cat /sys/kernel/debug/gpio
+
+# jetson-io로 핀 설정
+sudo /opt/nvidia/jetson-io/jetson-io.py</code></pre>
+
+                <h2 id="ros2-commands">ROS 2 명령어</h2>
+
+                <h3>노드 및 토픽</h3>
+<pre><code># 실행 중인 노드 목록
+ros2 node list
+
+# 노드 정보
+ros2 node info /motor_driver
+
+# 토픽 목록
+ros2 topic list
+
+# 토픽 데이터 확인
+ros2 topic echo /cmd_vel
+
+# 토픽 주파수 확인
+ros2 topic hz /scan
+
+# 토픽에 데이터 발행
+ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
+    "{linear: {x: 0.2}, angular: {z: 0.0}}"</code></pre>
+
+                <h3>서비스 및 파라미터</h3>
+<pre><code># 서비스 목록
+ros2 service list
+
+# 파라미터 목록
+ros2 param list /motor_driver
+
+# 파라미터 값 확인
+ros2 param get /motor_driver wheelbase
+
+# 파라미터 값 설정
+ros2 param set /motor_driver wheelbase 0.16</code></pre>
+
+                <h3>빌드 및 실행</h3>
+<pre><code># 워크스페이스 빌드
+cd ~/jetbot_ws
+colcon build
+
+# 특정 패키지만 빌드
+colcon build --packages-select jetbot_ros2
+
+# 심볼릭 링크 빌드 (Python 수정 시 재빌드 불필요)
+colcon build --symlink-install
+
+# 환경 로드
+source install/setup.bash
+
+# 런치 파일 실행
+ros2 launch jetbot_ros2 jetbot_bringup.launch.py
+
+# 노드 직접 실행
+ros2 run jetbot_ros2 motor_driver</code></pre>
+
+                <h3>디버깅</h3>
+<pre><code># TF 트리 확인
+ros2 run tf2_tools view_frames
+
+# rqt 그래프 (노드 연결 시각화)
+ros2 run rqt_graph rqt_graph
+
+# RViz2 실행
+rviz2</code></pre>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="links">참고 문서 및 링크</h1>
+
+                <h2>NVIDIA 공식 문서</h2>
+                <ul>
+                    <li><a href="https://developer.nvidia.com/embedded/jetson-orin-nano-developer-kit" target="_blank">Jetson Orin Nano Developer Kit</a></li>
+                    <li><a href="https://docs.nvidia.com/jetson/archives/r36.3/DeveloperGuide/index.html" target="_blank">Jetson Linux Developer Guide (JetPack 6)</a></li>
+                    <li><a href="https://github.com/NVIDIA-ISAAC-ROS" target="_blank">Isaac ROS GitHub</a></li>
+                    <li><a href="https://jetsonhacks.com/" target="_blank">JetsonHacks (커뮤니티 튜토리얼)</a></li>
+                </ul>
+
+                <h2>ROS 2 공식 문서</h2>
+                <ul>
+                    <li><a href="https://docs.ros.org/en/humble/" target="_blank">ROS 2 Humble Documentation</a></li>
+                    <li><a href="https://navigation.ros.org/" target="_blank">Nav2 Documentation</a></li>
+                    <li><a href="https://github.com/SteveMacenski/slam_toolbox" target="_blank">SLAM Toolbox GitHub</a></li>
+                </ul>
+
+                <h2>하드웨어 데이터시트</h2>
+                <ul>
+                    <li><a href="https://www.nxp.com/docs/en/data-sheet/PCA9685.pdf" target="_blank">PCA9685 데이터시트 (NXP)</a></li>
+                    <li><a href="https://www.pololu.com/file/0J86/TB6612FNG.pdf" target="_blank">TB6612FNG 데이터시트 (Toshiba)</a></li>
+                    <li><a href="https://www.slamtec.com/en/Lidar/A1" target="_blank">RPLIDAR A1 제품 페이지</a></li>
+                </ul>
+
+                <h2>관련 GitHub 저장소</h2>
+                <ul>
+                    <li><a href="https://github.com/NVIDIA-AI-IOT/jetbot" target="_blank">NVIDIA JetBot (Original)</a></li>
+                    <li><a href="https://github.com/Slamtec/sllidar_ros2" target="_blank">SLAMTEC sllidar_ros2</a></li>
+                    <li><a href="https://github.com/adafruit/Adafruit_CircuitPython_PCA9685" target="_blank">Adafruit CircuitPython PCA9685</a></li>
+                </ul>
+
+                <div class="alert alert-success">
+                    <strong>📚 문서 완료!</strong> 이 가이드가 JetBot 프로젝트에 도움이 되길 바랍니다.
+                    문제가 발생하면 GitHub Issues에 질문을 남겨주세요.
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="ros2.html" class="btn btn-secondary">← 이전: ROS2 구현</a>
+                        <a href="index.html" class="btn btn-primary" style="margin-left: 1rem;">홈으로 →</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

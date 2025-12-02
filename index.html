@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JetBot ROS2 Guide - Jetson Orin Nano</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🤖</span>
+                <span>JetBot ROS2</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <span>🚀</span>
+                    <span>NVIDIA Jetson Orin Nano + ROS 2 Humble</span>
+                </div>
+                <h1>Jetson Orin Nano JetBot<br>ROS2 제작 가이드</h1>
+                <p>
+                    차세대 엣지 AI 로보틱스 플랫폼 구축을 위한 포괄적 기술 문서.
+                    하드웨어 설계부터 ROS 2 Humble 기반 자율주행까지 완벽 가이드.
+                </p>
+                <div class="hero-buttons">
+                    <a href="hardware.html" class="btn btn-primary">
+                        <span>📖</span> 시작하기
+                    </a>
+                    <a href="#features" class="btn btn-secondary">
+                        <span>📋</span> 목차 보기
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="features" id="features">
+            <div class="section-title">
+                <h2>문서 구성</h2>
+                <p>체계적인 단계별 가이드로 JetBot을 완성하세요</p>
+            </div>
+            <div class="feature-grid">
+                <a href="hardware.html" class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>하드웨어 설계</h3>
+                    <p>전원 분배 네트워크(PDN), 레벨 시프터, 카메라 인터페이스, 모터 드라이버 연결 등 전기적 설계의 모든 것</p>
+                </a>
+                <a href="hardware.html#parts" class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>부품 목록</h3>
+                    <p>Jetson Orin Nano 호환 부품 BOM(Bill of Materials) - 모터, LiDAR, 카메라, 배터리 및 추천 제품</p>
+                </a>
+                <a href="software.html" class="feature-card">
+                    <div class="feature-icon">💻</div>
+                    <h3>JetPack 6 설치</h3>
+                    <p>Ubuntu 22.04 기반 JetPack 6.x 설치 및 NVMe SSD 부팅 설정, CUDA/TensorRT 환경 구성</p>
+                </a>
+                <a href="software.html#ros2" class="feature-card">
+                    <div class="feature-icon">🤖</div>
+                    <h3>ROS 2 Humble 설정</h3>
+                    <p>ROS 2 Humble Hawksbill 바이너리 설치, 환경 설정, rosdep 초기화 및 워크스페이스 구성</p>
+                </a>
+                <a href="ros2.html" class="feature-card">
+                    <div class="feature-icon">⚙️</div>
+                    <h3>ROS 2 구현</h3>
+                    <p>모터 드라이버 노드, 카메라 노드, LiDAR 통합, TF 트리, URDF 모델링 구현 가이드</p>
+                </a>
+                <a href="ros2.html#navigation" class="feature-card">
+                    <div class="feature-icon">🗺️</div>
+                    <h3>SLAM & Navigation</h3>
+                    <p>SLAM Toolbox를 이용한 맵핑, Nav2 자율주행 스택 통합, 경로 계획 및 장애물 회피</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Specs Comparison -->
+        <section class="specs-section">
+            <div class="specs-container">
+                <div class="section-title">
+                    <h2>Nano vs Orin Nano 비교</h2>
+                    <p>왜 Orin Nano로 업그레이드해야 하는가?</p>
+                </div>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>사양</th>
+                            <th>Jetson Nano (Maxwell)</th>
+                            <th>Jetson Orin Nano (Ampere)</th>
+                            <th>설계 시 함의</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>GPU 아키텍처</td>
+                            <td>128-core Maxwell</td>
+                            <td class="spec-highlight">1024-core Ampere</td>
+                            <td>실시간 객체 탐지 + 3D SLAM 동시 수행</td>
+                        </tr>
+                        <tr>
+                            <td>AI 성능</td>
+                            <td>0.5 TOPS</td>
+                            <td class="spec-highlight">40 TOPS (80배 향상)</td>
+                            <td>트랜스포머 모델 구동 가능</td>
+                        </tr>
+                        <tr>
+                            <td>CPU</td>
+                            <td>4-core Cortex-A57</td>
+                            <td class="spec-highlight">6-core Cortex-A78AE</td>
+                            <td>ROS 2 멀티스레드 처리 효율 증대</td>
+                        </tr>
+                        <tr>
+                            <td>메모리</td>
+                            <td>4GB LPDDR4</td>
+                            <td class="spec-highlight">4GB / 8GB LPDDR5</td>
+                            <td>고대역폭 센서 데이터 Zero-Copy 처리</td>
+                        </tr>
+                        <tr>
+                            <td>운영체제</td>
+                            <td>Ubuntu 18.04 (JetPack 4)</td>
+                            <td class="spec-highlight">Ubuntu 22.04 (JetPack 6)</td>
+                            <td>ROS 2 Humble 네이티브 지원</td>
+                        </tr>
+                        <tr>
+                            <td>I/O 로직 레벨</td>
+                            <td>3.3V (일부 5V 허용)</td>
+                            <td>3.3V (엄격함)</td>
+                            <td style="color: var(--accent-orange);">레벨 시프터 필수!</td>
+                        </tr>
+                        <tr>
+                            <td>카메라 커넥터</td>
+                            <td>15-pin (1.0mm)</td>
+                            <td>22-pin (0.5mm)</td>
+                            <td style="color: var(--accent-orange);">어댑터 케이블 필수!</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Quick Start -->
+        <section class="features">
+            <div class="section-title">
+                <h2>Quick Start</h2>
+                <p>빠른 시작을 위한 핵심 단계</p>
+            </div>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">1️⃣</div>
+                    <h3>부품 준비</h3>
+                    <p>
+                        • Jetson Orin Nano Developer Kit<br>
+                        • 3S/4S LiPo 배터리 (2200mAh+)<br>
+                        • PCA9685 + TB6612 모터 드라이버<br>
+                        • RPLIDAR A1/A2<br>
+                        • IMX219 카메라 + 22핀 어댑터
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">2️⃣</div>
+                    <h3>OS 설치</h3>
+                    <p>
+                        • NVMe SSD 준비 (필수 권장)<br>
+                        • SDK Manager로 JetPack 6 플래싱<br>
+                        • CUDA, cuDNN, TensorRT 설치<br>
+                        • 한글 입력 환경 설정
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">3️⃣</div>
+                    <h3>ROS 2 설치</h3>
+                    <p>
+                        • ROS 2 Humble Desktop 패키지 설치<br>
+                        • rosdep 초기화<br>
+                        • colcon 빌드 도구 설치<br>
+                        • 워크스페이스 생성
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">4️⃣</div>
+                    <h3>하드웨어 연결</h3>
+                    <p>
+                        • I2C 버스 7번 확인 (Orin Nano)<br>
+                        • 레벨 시프터 배선<br>
+                        • LiDAR udev 규칙 설정<br>
+                        • 카메라 CSI 연결
+                    </p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a> |
+            Powered by NVIDIA Jetson
+        </p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROS2 Implementation - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <span class="logo-icon">🤖</span>
+                <span>JetBot ROS2</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html" class="active">ROS2</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>아키텍처</h4>
+                <ul>
+                    <li><a href="#architecture" class="active">ROS 2 아키텍처</a></li>
+                    <li><a href="#package">패키지 구조</a></li>
+                </ul>
+                <h4>모터 제어</h4>
+                <ul>
+                    <li><a href="#motor-driver">모터 드라이버 노드</a></li>
+                    <li><a href="#kinematics">디퍼렌셜 키네마틱스</a></li>
+                    <li><a href="#teleop">텔레오퍼레이션</a></li>
+                </ul>
+                <h4>센서 통합</h4>
+                <ul>
+                    <li><a href="#camera">카메라 노드</a></li>
+                    <li><a href="#lidar">LiDAR 노드</a></li>
+                    <li><a href="#tf">TF 트리 설정</a></li>
+                </ul>
+                <h4 id="navigation">자율주행</h4>
+                <ul>
+                    <li><a href="#urdf">URDF 모델링</a></li>
+                    <li><a href="#slam">SLAM Toolbox</a></li>
+                    <li><a href="#nav2">Nav2 스택</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>ROS2 Implementation</span>
+                </div>
+
+                <h1 id="architecture">ROS 2 아키텍처 설계</h1>
+                <p>
+                    JetBot의 ROS 2 소프트웨어 아키텍처는 크게 세 계층으로 구성됩니다:
+                    하드웨어 제어(Low-Level), 인지(Perception), 항법(Navigation).
+                </p>
+
+                <div class="diagram">
+┌────────────────────────────────────────────────────────────────┐
+│                     ROS 2 ARCHITECTURE                         │
+├────────────────────────────────────────────────────────────────┤
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │                 NAVIGATION LAYER                          │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │ │
+│  │  │    Nav2     │  │    SLAM     │  │   Path Planner  │  │ │
+│  │  │ Controller  │  │   Toolbox   │  │   (Regulated    │  │ │
+│  │  │   (DWB)     │  │             │  │   Pure Pursuit) │  │ │
+│  │  └──────┬──────┘  └──────┬──────┘  └────────┬────────┘  │ │
+│  └─────────┼────────────────┼──────────────────┼───────────┘ │
+│            │                │                  │              │
+│  ┌─────────▼────────────────▼──────────────────▼───────────┐ │
+│  │                 PERCEPTION LAYER                         │ │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────┐  │ │
+│  │  │   Camera    │  │   LiDAR     │  │   TF Broadcaster│  │ │
+│  │  │   Node      │  │   Node      │  │   (Transforms)  │  │ │
+│  │  │ /image_raw  │  │   /scan     │  │                 │  │ │
+│  │  └─────────────┘  └──────┬──────┘  └────────┬────────┘  │ │
+│  └──────────────────────────┼──────────────────┼───────────┘ │
+│                             │                  │              │
+│  ┌──────────────────────────▼──────────────────▼───────────┐ │
+│  │               HARDWARE CONTROL LAYER                     │ │
+│  │  ┌─────────────────────────────────────────────────┐    │ │
+│  │  │            Motor Driver Node                     │    │ │
+│  │  │                                                  │    │ │
+│  │  │    /cmd_vel (Twist) ──▶ PWM Signals ──▶ Motors  │    │ │
+│  │  │                                                  │    │ │
+│  │  │    Differential Drive Kinematics:                │    │ │
+│  │  │    v_L = v - (ω × L/2)                          │    │ │
+│  │  │    v_R = v + (ω × L/2)                          │    │ │
+│  │  └─────────────────────────────────────────────────┘    │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                                                                │
+│  ┌──────────────────────────────────────────────────────────┐ │
+│  │                   HARDWARE (I2C Bus 7)                    │ │
+│  │     PCA9685 (PWM) ──▶ TB6612 (H-Bridge) ──▶ DC Motors    │ │
+│  └──────────────────────────────────────────────────────────┘ │
+│                                                                │
+└────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="package">패키지 구조</h2>
+<pre><code>jetbot_ws/
+└── src/
+    └── jetbot_ros2/
+        ├── jetbot_ros2/           # Python 모듈
+        │   ├── __init__.py
+        │   ├── motor_driver.py    # 모터 드라이버 노드
+        │   ├── camera_node.py     # 카메라 노드
+        │   └── lidar_node.py      # LiDAR 래퍼 노드
+        ├── launch/
+        │   ├── jetbot_bringup.launch.py
+        │   ├── slam.launch.py
+        │   └── navigation.launch.py
+        ├── urdf/
+        │   └── jetbot.urdf.xacro
+        ├── config/
+        │   ├── nav2_params.yaml
+        │   └── slam_params.yaml
+        ├── package.xml
+        ├── setup.py
+        └── setup.cfg</code></pre>
+
+                <h3>패키지 생성</h3>
+<pre><code># 워크스페이스로 이동
+cd ~/jetbot_ws/src
+
+# 패키지 생성
+ros2 pkg create --build-type ament_python jetbot_ros2 \
+    --dependencies rclpy geometry_msgs sensor_msgs std_msgs
+
+# 디렉토리 구조 생성
+cd jetbot_ros2
+mkdir launch urdf config</code></pre>
+
+                <h2 id="motor-driver">모터 드라이버 노드</h2>
+                <p>
+                    <code>/cmd_vel</code> 토픽을 구독하여 Twist 메시지를 PWM 신호로 변환합니다.
+                    핵심은 <strong>I2C 버스 7번</strong>과 <strong>디퍼렌셜 드라이브 키네마틱스</strong>입니다.
+                </p>
+
+                <h3 id="kinematics">디퍼렌셜 드라이브 수식</h3>
+                <p>로봇의 선속도(v)와 각속도(ω), 바퀴 간 거리(L)가 주어졌을 때:</p>
+                <div class="diagram" style="text-align: left; padding: 1.5rem;">
+v_left  = v - (ω × L / 2)
+v_right = v + (ω × L / 2)
+
+여기서:
+  v = linear.x (전진 속도, m/s)
+  ω = angular.z (회전 속도, rad/s)
+  L = wheelbase (바퀴 간 거리, m)
+                </div>
+
+                <h3>motor_driver.py 구현</h3>
+<pre><code>#!/usr/bin/env python3
+"""
+JetBot Motor Driver Node for Jetson Orin Nano
+주의: I2C 버스 7번 사용 (Orin Nano 전용)
+"""
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import Twist
+from adafruit_servokit import ServoKit
+
+class MotorDriverNode(Node):
+    def __init__(self):
+        super().__init__('motor_driver')
+
+        # 파라미터 선언
+        self.declare_parameter('wheelbase', 0.15)  # 바퀴 간 거리 (m)
+        self.declare_parameter('max_speed', 1.0)   # 최대 속도 (m/s)
+        self.declare_parameter('i2c_bus', 7)       # Orin Nano: 7번
+        self.declare_parameter('i2c_address', 0x40)
+
+        # 파라미터 로드
+        self.wheelbase = self.get_parameter('wheelbase').value
+        self.max_speed = self.get_parameter('max_speed').value
+        i2c_bus = self.get_parameter('i2c_bus').value
+        i2c_address = self.get_parameter('i2c_address').value
+
+        # PCA9685 초기화 (Orin Nano: bus_id=7 필수!)
+        try:
+            self.kit = ServoKit(
+                channels=16,
+                address=i2c_address,
+                i2c=None,  # adafruit_blinka가 자동 감지
+                # Orin Nano에서는 busio를 통해 bus 지정 필요
+            )
+            self.get_logger().info(f'PCA9685 initialized on bus {i2c_bus}')
+        except Exception as e:
+            self.get_logger().error(f'Failed to initialize PCA9685: {e}')
+            raise
+
+        # PWM 주파수 설정
+        self.kit.frequency = 60  # 60Hz for DC motors
+
+        # Subscriber
+        self.subscription = self.create_subscription(
+            Twist,
+            'cmd_vel',
+            self.cmd_vel_callback,
+            10
+        )
+
+        self.get_logger().info('Motor Driver Node started')
+
+    def cmd_vel_callback(self, msg: Twist):
+        """Twist 메시지를 모터 속도로 변환"""
+        linear = msg.linear.x
+        angular = msg.angular.z
+
+        # 디퍼렌셜 드라이브 키네마틱스
+        left_speed = linear - (angular * self.wheelbase / 2)
+        right_speed = linear + (angular * self.wheelbase / 2)
+
+        # 속도 정규화 (-1.0 ~ 1.0)
+        left_speed = self.clamp(left_speed / self.max_speed, -1.0, 1.0)
+        right_speed = self.clamp(right_speed / self.max_speed, -1.0, 1.0)
+
+        # 모터 구동
+        self.set_motor(0, left_speed)   # 왼쪽 모터
+        self.set_motor(1, right_speed)  # 오른쪽 모터
+
+        self.get_logger().debug(f'L: {left_speed:.2f}, R: {right_speed:.2f}')
+
+    def set_motor(self, motor_id: int, speed: float):
+        """
+        모터 속도 설정 (TB6612 기준)
+        speed: -1.0 (후진) ~ 0.0 (정지) ~ 1.0 (전진)
+        """
+        # 채널 매핑 (PCA9685)
+        # Motor 0: PWM=CH0, IN1=CH1, IN2=CH2
+        # Motor 1: PWM=CH3, IN1=CH4, IN2=CH5
+        pwm_ch = motor_id * 3
+        in1_ch = motor_id * 3 + 1
+        in2_ch = motor_id * 3 + 2
+
+        # 방향 설정
+        if speed > 0:
+            self.kit.servo[in1_ch].angle = 180  # HIGH
+            self.kit.servo[in2_ch].angle = 0    # LOW
+        elif speed < 0:
+            self.kit.servo[in1_ch].angle = 0    # LOW
+            self.kit.servo[in2_ch].angle = 180  # HIGH
+        else:
+            self.kit.servo[in1_ch].angle = 0    # LOW
+            self.kit.servo[in2_ch].angle = 0    # LOW
+
+        # PWM 듀티 사이클 (0-100%)
+        duty = int(abs(speed) * 100)
+        self.kit.servo[pwm_ch].angle = int(duty * 1.8)  # 0-180 매핑
+
+    @staticmethod
+    def clamp(value, min_val, max_val):
+        return max(min_val, min(max_val, value))
+
+    def destroy_node(self):
+        """노드 종료 시 모터 정지"""
+        self.set_motor(0, 0)
+        self.set_motor(1, 0)
+        super().destroy_node()
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = MotorDriverNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()</code></pre>
+
+                <div class="alert alert-warning">
+                    <strong>⚠️ 중요:</strong> 위 코드는 개념 설명용입니다. 실제 구현 시
+                    <code>busio</code>를 사용하여 I2C 버스를 명시적으로 지정해야 할 수 있습니다.
+                </div>
+
+                <h2 id="teleop">텔레오퍼레이션 테스트</h2>
+<pre><code># 터미널 1: 모터 드라이버 노드 실행
+ros2 run jetbot_ros2 motor_driver
+
+# 터미널 2: 키보드 텔레오퍼레이션
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+
+# 키 조작:
+#   i: 전진
+#   ,: 후진
+#   j: 좌회전
+#   l: 우회전
+#   k: 정지</code></pre>
+
+                <h3>캘리브레이션 체크리스트</h3>
+                <ul>
+                    <li><strong>모터 방향:</strong> 'i' 키로 전진하는지 확인. 반대면 코드에서 부호 반전</li>
+                    <li><strong>회전 방향:</strong> 'j' 키로 좌회전하는지 확인</li>
+                    <li><strong>직진성:</strong> 전진 시 한쪽으로 쏠리면 트림(trim) 보정 적용</li>
+                    <li><strong>오도메트리:</strong> 1m 전진 시 RViz에서도 1m 이동 확인</li>
+                </ul>
+
+                <h2 id="camera">카메라 노드</h2>
+                <p>
+                    Orin Nano의 GPU 성능을 활용하려면 Isaac ROS Argus Camera를 사용하는 것이 좋습니다.
+                    Zero-Copy로 이미지를 GPU 메모리에서 직접 처리합니다.
+                </p>
+
+                <h3>v4l2_camera 사용 (간단한 방법)</h3>
+<pre><code># v4l2_camera 패키지 설치
+sudo apt install ros-humble-v4l2-camera
+
+# 카메라 노드 실행
+ros2 run v4l2_camera v4l2_camera_node --ros-args \
+    -p video_device:=/dev/video0 \
+    -p image_size:=[640,480] \
+    -p pixel_format:=YUYV</code></pre>
+
+                <h3>Isaac ROS Argus Camera (GPU 가속)</h3>
+<pre><code># Isaac ROS 컨테이너 또는 네이티브 설치 후
+ros2 launch isaac_ros_argus_camera isaac_ros_argus_camera_mono.launch.py</code></pre>
+
+                <h2 id="lidar">LiDAR 노드 (RPLIDAR)</h2>
+<pre><code># sllidar_ros2 패키지 설치
+cd ~/jetbot_ws/src
+git clone https://github.com/Slamtec/sllidar_ros2.git
+
+# 빌드
+cd ~/jetbot_ws
+colcon build --packages-select sllidar_ros2
+
+# 실행 (심볼릭 링크 사용)
+ros2 launch sllidar_ros2 sllidar_a1_launch.py \
+    serial_port:=/dev/rplidar</code></pre>
+
+                <h2 id="tf">TF 트리 설정</h2>
+                <p>로봇의 각 프레임 간 변환 관계를 정의합니다:</p>
+
+                <div class="diagram">
+                    map
+                     │
+                     ▼
+                   odom
+                     │
+                     ▼
+                 base_link ──────┬─────────────┬─────────────┐
+                     │           │             │             │
+                     ▼           ▼             ▼             ▼
+                 base_footprint  left_wheel   right_wheel  laser_frame
+                                                              │
+                                                              ▼
+                                                          camera_link
+                </div>
+
+                <h3>Static Transform Publisher</h3>
+<pre><code># LiDAR가 로봇 중심에서 10cm 앞에 위치한 경우
+ros2 run tf2_ros static_transform_publisher \
+    0.1 0 0.05 0 0 0 base_link laser_frame</code></pre>
+
+                <h2 id="urdf">URDF 모델링</h2>
+                <p>로봇의 물리적 형상을 정의하는 URDF 파일입니다:</p>
+
+<pre><code>&lt;?xml version="1.0"?&gt;
+&lt;robot name="jetbot"&gt;
+
+  &lt;!-- Base Link --&gt;
+  &lt;link name="base_link"&gt;
+    &lt;visual&gt;
+      &lt;geometry&gt;
+        &lt;box size="0.18 0.14 0.05"/&gt;
+      &lt;/geometry&gt;
+      &lt;material name="dark_grey"&gt;
+        &lt;color rgba="0.2 0.2 0.2 1"/&gt;
+      &lt;/material&gt;
+    &lt;/visual&gt;
+    &lt;collision&gt;
+      &lt;geometry&gt;
+        &lt;box size="0.18 0.14 0.05"/&gt;
+      &lt;/geometry&gt;
+    &lt;/collision&gt;
+  &lt;/link&gt;
+
+  &lt;!-- Left Wheel --&gt;
+  &lt;link name="left_wheel"&gt;
+    &lt;visual&gt;
+      &lt;geometry&gt;
+        &lt;cylinder radius="0.033" length="0.025"/&gt;
+      &lt;/geometry&gt;
+      &lt;material name="black"/&gt;
+    &lt;/visual&gt;
+  &lt;/link&gt;
+
+  &lt;joint name="left_wheel_joint" type="continuous"&gt;
+    &lt;parent link="base_link"/&gt;
+    &lt;child link="left_wheel"/&gt;
+    &lt;origin xyz="0 0.075 -0.01" rpy="-1.5708 0 0"/&gt;
+    &lt;axis xyz="0 0 1"/&gt;
+  &lt;/joint&gt;
+
+  &lt;!-- Right Wheel --&gt;
+  &lt;link name="right_wheel"&gt;
+    &lt;visual&gt;
+      &lt;geometry&gt;
+        &lt;cylinder radius="0.033" length="0.025"/&gt;
+      &lt;/geometry&gt;
+      &lt;material name="black"/&gt;
+    &lt;/visual&gt;
+  &lt;/link&gt;
+
+  &lt;joint name="right_wheel_joint" type="continuous"&gt;
+    &lt;parent link="base_link"/&gt;
+    &lt;child link="right_wheel"/&gt;
+    &lt;origin xyz="0 -0.075 -0.01" rpy="-1.5708 0 0"/&gt;
+    &lt;axis xyz="0 0 1"/&gt;
+  &lt;/joint&gt;
+
+  &lt;!-- LiDAR --&gt;
+  &lt;link name="laser_frame"/&gt;
+
+  &lt;joint name="laser_joint" type="fixed"&gt;
+    &lt;parent link="base_link"/&gt;
+    &lt;child link="laser_frame"/&gt;
+    &lt;origin xyz="0.08 0 0.06" rpy="0 0 0"/&gt;
+  &lt;/joint&gt;
+
+&lt;/robot&gt;</code></pre>
+
+                <h2 id="slam">SLAM Toolbox</h2>
+<pre><code># SLAM Toolbox 설치
+sudo apt install ros-humble-slam-toolbox
+
+# SLAM 실행
+ros2 launch slam_toolbox online_async_launch.py \
+    slam_params_file:=./config/slam_params.yaml</code></pre>
+
+                <h3>slam_params.yaml</h3>
+<pre><code>slam_toolbox:
+  ros__parameters:
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    mode: mapping
+
+    # 스캔 매칭 파라미터
+    resolution: 0.05
+    max_laser_range: 12.0
+    minimum_travel_distance: 0.1
+    minimum_travel_heading: 0.1</code></pre>
+
+                <h2 id="nav2">Nav2 자율주행 스택</h2>
+<pre><code># Nav2 설치
+sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
+
+# Nav2 실행 (맵 필요)
+ros2 launch nav2_bringup navigation_launch.py \
+    map:=./maps/my_map.yaml \
+    params_file:=./config/nav2_params.yaml</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>💡 JetBot 권장 컨트롤러:</strong>
+                    <ul>
+                        <li><strong>Regulated Pure Pursuit:</strong> 저속 로봇에 적합</li>
+                        <li><strong>DWB (Dynamic Window Approach):</strong> 동적 장애물 회피</li>
+                    </ul>
+                </div>
+
+                <h2>Launch 파일 예시</h2>
+<pre><code># launch/jetbot_bringup.launch.py
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        # Motor Driver
+        Node(
+            package='jetbot_ros2',
+            executable='motor_driver',
+            name='motor_driver',
+            parameters=[{
+                'wheelbase': 0.15,
+                'max_speed': 0.5,
+                'i2c_bus': 7
+            }]
+        ),
+
+        # LiDAR
+        Node(
+            package='sllidar_ros2',
+            executable='sllidar_node',
+            name='sllidar_node',
+            parameters=[{
+                'serial_port': '/dev/rplidar',
+                'serial_baudrate': 115200,
+                'frame_id': 'laser_frame'
+            }]
+        ),
+
+        # Robot State Publisher
+        Node(
+            package='robot_state_publisher',
+            executable='robot_state_publisher',
+            name='robot_state_publisher',
+            arguments=['urdf/jetbot.urdf']
+        ),
+
+        # Static TF
+        Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            arguments=['0', '0', '0', '0', '0', '0', 'base_link', 'base_footprint']
+        ),
+    ])</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>✅ 구현 완료!</strong> 이제 JetBot이 ROS 2 Humble 환경에서 동작합니다.
+                    다음 단계로 SLAM으로 맵을 생성하고 Nav2로 자율주행을 테스트하세요.
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="software.html" class="btn btn-secondary">← 이전: 소프트웨어 설치</a>
+                        <a href="reference.html" class="btn btn-primary" style="margin-left: 1rem;">다음: 참고자료 →</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>
