@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLAM - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="ros-advanced.html">ROS 심화</a></li>
+                <li><a href="web-tools.html">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>SLAM 기초</h4>
+                <ul>
+                    <li><a href="#slam-intro">SLAM이란?</a></li>
+                    <li><a href="#slam-problem">SLAM 문제 정의</a></li>
+                    <li><a href="#slam-types">알고리즘 종류</a></li>
+                    <li><a href="#slam-sensors">센서 선택</a></li>
+                </ul>
+                <h4>SLAM Toolbox</h4>
+                <ul>
+                    <li><a href="#toolbox-intro">소개</a></li>
+                    <li><a href="#toolbox-install">설치</a></li>
+                    <li><a href="#toolbox-modes">동작 모드</a></li>
+                    <li><a href="#toolbox-params">파라미터 설정</a></li>
+                    <li><a href="#toolbox-mapping">매핑 실습</a></li>
+                    <li><a href="#toolbox-localization">위치 추정</a></li>
+                </ul>
+                <h4>Cartographer</h4>
+                <ul>
+                    <li><a href="#carto-intro">소개</a></li>
+                    <li><a href="#carto-install">설치</a></li>
+                    <li><a href="#carto-config">설정</a></li>
+                    <li><a href="#carto-tuning">튜닝</a></li>
+                </ul>
+                <h4>맵 관리</h4>
+                <ul>
+                    <li><a href="#map-format">맵 파일 형식</a></li>
+                    <li><a href="#map-save">맵 저장</a></li>
+                    <li><a href="#map-edit">맵 편집</a></li>
+                    <li><a href="#map-server">Map Server</a></li>
+                </ul>
+                <h4>고급 주제</h4>
+                <ul>
+                    <li><a href="#loop-closing">루프 클로징</a></li>
+                    <li><a href="#multi-floor">다층 매핑</a></li>
+                    <li><a href="#visual-slam">Visual SLAM</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <a href="ros-advanced.html">ROS 심화</a> / <span>SLAM</span>
+                </div>
+
+                <h1 id="slam-intro">SLAM이란?</h1>
+                <p>
+                    <strong>SLAM (Simultaneous Localization and Mapping)</strong>은
+                    로봇이 미지의 환경에서 센서 데이터를 이용하여 <strong>지도를 생성</strong>하면서
+                    동시에 <strong>자신의 위치를 추정</strong>하는 기술입니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>왜 어려운가?</strong>
+                    <ul>
+                        <li>정확한 지도를 만들려면 정확한 위치를 알아야 함</li>
+                        <li>정확한 위치를 알려면 정확한 지도가 필요함</li>
+                        <li>이 <strong>닭과 달걀</strong> 문제를 동시에 해결해야 함</li>
+                    </ul>
+                </div>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────┐
+│                            SLAM PROCESS                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌─────────┐      ┌──────────────┐      ┌─────────────────────────┐   │
+│   │  센서   │      │   SLAM       │      │         출력            │   │
+│   │  입력   │ ───▶ │   알고리즘    │ ───▶ │                        │   │
+│   └─────────┘      └──────────────┘      │  ┌─────────────────┐   │   │
+│                                          │  │      Map        │   │   │
+│   • LiDAR (/scan)                        │  │  ┌───┬───┬───┐  │   │   │
+│   • Odometry (/odom)                     │  │  │   │ █ │   │  │   │   │
+│   • IMU (/imu)                           │  │  │ █ │   │ █ │  │   │   │
+│   • Camera (/image)                      │  │  │   │ R │   │  │   │   │
+│                                          │  │  └───┴───┴───┘  │   │   │
+│                                          │  └─────────────────┘   │   │
+│                                          │                        │   │
+│                                          │  ┌─────────────────┐   │   │
+│                                          │  │   Pose (x,y,θ)  │   │   │
+│                                          │  │   map → odom    │   │   │
+│                                          │  │   TF 변환        │   │   │
+│                                          │  └─────────────────┘   │   │
+│                                          └─────────────────────────┘   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="slam-problem">SLAM 문제의 수학적 정의</h2>
+
+                <h3>확률적 SLAM</h3>
+                <p>SLAM은 베이지안 추정 문제로 정의됩니다:</p>
+
+                <div class="diagram" style="text-align: left; padding: 2rem;">
+<strong>구하고자 하는 것:</strong>
+P(x_t, m | z_{1:t}, u_{1:t})
+
+여기서:
+  x_t   = 시간 t에서의 로봇 자세 (x, y, θ)
+  m     = 지도 (Map)
+  z_{1:t} = 시간 1~t까지의 관측 (센서 데이터)
+  u_{1:t} = 시간 1~t까지의 제어 입력 (오도메트리)
+
+<strong>분해:</strong>
+P(x_t, m | z, u) = P(x_t | m, z, u) × P(m | z, u)
+                   └── Localization ──┘   └── Mapping ──┘
+                </div>
+
+                <h3>Scan Matching</h3>
+                <p>2D LiDAR SLAM의 핵심은 연속된 스캔 데이터를 정합(matching)하는 것입니다:</p>
+
+<pre><code># ICP (Iterative Closest Point) 개념
+# 1. 이전 스캔 S1과 현재 스캔 S2가 있을 때
+# 2. S2를 S1에 맞추는 변환 T를 찾음
+# 3. T = argmin Σ ||p_i - T(q_i)||²
+#    p_i ∈ S1, q_i ∈ S2
+
+# 결과: 로봇의 이동량 (Δx, Δy, Δθ)</code></pre>
+
+                <h2 id="slam-types">SLAM 알고리즘 종류</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>알고리즘</th>
+                            <th>방식</th>
+                            <th>장점</th>
+                            <th>단점</th>
+                            <th>추천 환경</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>EKF-SLAM</strong></td>
+                            <td>Extended Kalman Filter</td>
+                            <td>이론적으로 최적</td>
+                            <td>O(n²) 복잡도, 선형화 오류</td>
+                            <td>작은 실내</td>
+                        </tr>
+                        <tr>
+                            <td><strong>FastSLAM</strong></td>
+                            <td>Particle Filter</td>
+                            <td>비선형 처리, O(n log n)</td>
+                            <td>파티클 수에 민감</td>
+                            <td>중간 규모</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Graph SLAM</strong></td>
+                            <td>그래프 최적화</td>
+                            <td>대규모 가능, 루프 클로징</td>
+                            <td>실시간 어려울 수 있음</td>
+                            <td>대형 건물</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SLAM Toolbox</strong></td>
+                            <td>Graph 기반</td>
+                            <td>ROS 2 기본, 사용 쉬움</td>
+                            <td>2D만 지원</td>
+                            <td>실내 로봇</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cartographer</strong></td>
+                            <td>Submap + 그래프</td>
+                            <td>Google, 2D/3D, 정확</td>
+                            <td>설정 복잡</td>
+                            <td>대규모, 3D</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hector SLAM</strong></td>
+                            <td>Scan Matching</td>
+                            <td>오도메트리 불필요</td>
+                            <td>빠른 회전에 취약</td>
+                            <td>드론, UAV</td>
+                        </tr>
+                        <tr>
+                            <td><strong>GMapping</strong></td>
+                            <td>Particle Filter</td>
+                            <td>레거시, 검증됨</td>
+                            <td>ROS 1용</td>
+                            <td>레거시</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="slam-sensors">SLAM 센서 선택</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>센서</th>
+                            <th>SLAM 타입</th>
+                            <th>장점</th>
+                            <th>단점</th>
+                            <th>가격대</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>2D LiDAR</strong></td>
+                            <td>LiDAR SLAM</td>
+                            <td>정확, 조명 무관</td>
+                            <td>2D만, 가격</td>
+                            <td>$100~$1000</td>
+                        </tr>
+                        <tr>
+                            <td><strong>3D LiDAR</strong></td>
+                            <td>3D SLAM</td>
+                            <td>풍부한 정보</td>
+                            <td>고가, 연산량</td>
+                            <td>$1000~$10000+</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RGB 카메라</strong></td>
+                            <td>Visual SLAM</td>
+                            <td>저렴, 풍부한 정보</td>
+                            <td>조명 민감, 연산량</td>
+                            <td>$20~$200</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RGB-D 카메라</strong></td>
+                            <td>RGB-D SLAM</td>
+                            <td>깊이+색상</td>
+                            <td>실외 불가, 범위 제한</td>
+                            <td>$100~$500</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stereo 카메라</strong></td>
+                            <td>Stereo SLAM</td>
+                            <td>실외 가능</td>
+                            <td>캘리브레이션</td>
+                            <td>$200~$1000</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <strong>JetBot 권장:</strong> RPLIDAR A1 ($99) + SLAM Toolbox 조합
+                </div>
+
+                <!-- SLAM Toolbox 섹션 -->
+                <h1 id="toolbox-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">SLAM Toolbox</h1>
+                <p>
+                    <strong>SLAM Toolbox</strong>는 ROS 2의 표준 2D SLAM 솔루션입니다.
+                    Steve Macenski가 개발했으며, Nav2 프로젝트와 함께 사용됩니다.
+                </p>
+
+                <h3>주요 특징</h3>
+                <ul>
+                    <li>온라인/오프라인 매핑</li>
+                    <li>Lifelong 매핑 (지속적 업데이트)</li>
+                    <li>위치 추정 (Localization) 모드</li>
+                    <li>직렬화된 맵 파일 (.posegraph)</li>
+                    <li>루프 클로징</li>
+                    <li>RViz 플러그인 (Interactive Mode)</li>
+                </ul>
+
+                <h2 id="toolbox-install">설치</h2>
+<pre><code># 바이너리 설치
+sudo apt install ros-humble-slam-toolbox
+
+# 의존성 확인
+ros2 pkg list | grep slam
+
+# 설치 확인
+ros2 launch slam_toolbox --help</code></pre>
+
+                <h2 id="toolbox-modes">동작 모드</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>모드</th>
+                            <th>Launch 파일</th>
+                            <th>용도</th>
+                            <th>특징</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Online Async</strong></td>
+                            <td>online_async_launch.py</td>
+                            <td>실시간 매핑</td>
+                            <td>CPU 효율적, 권장</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Online Sync</strong></td>
+                            <td>online_sync_launch.py</td>
+                            <td>정밀 매핑</td>
+                            <td>모든 스캔 처리</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Offline</strong></td>
+                            <td>offline_launch.py</td>
+                            <td>Bag에서 매핑</td>
+                            <td>후처리</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Localization</strong></td>
+                            <td>localization_launch.py</td>
+                            <td>기존 맵에서 위치 추정</td>
+                            <td>맵 수정 없음</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lifelong</strong></td>
+                            <td>lifelong_launch.py</td>
+                            <td>지속적 맵 업데이트</td>
+                            <td>환경 변화 대응</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+<pre><code># 온라인 비동기 매핑 (권장)
+ros2 launch slam_toolbox online_async_launch.py
+
+# 커스텀 파라미터 파일 사용
+ros2 launch slam_toolbox online_async_launch.py \
+    slam_params_file:=~/jetbot_ws/config/slam_params.yaml
+
+# use_sim_time 설정 (시뮬레이션용)
+ros2 launch slam_toolbox online_async_launch.py \
+    use_sim_time:=true</code></pre>
+
+                <h2 id="toolbox-params">파라미터 상세 설정</h2>
+
+<pre><code># config/slam_params.yaml
+slam_toolbox:
+  ros__parameters:
+
+    # ========== 기본 프레임 설정 ==========
+    odom_frame: odom           # 오도메트리 프레임
+    map_frame: map             # 맵 프레임
+    base_frame: base_link      # 로봇 베이스 프레임
+    scan_topic: /scan          # LiDAR 토픽
+    use_scan_matching: true    # 스캔 매칭 사용
+    use_scan_barycenter: true  # 스캔 중심 사용
+
+    # ========== 동작 모드 ==========
+    mode: mapping              # mapping / localization / lifelong
+
+    # ========== 맵 해상도 ==========
+    resolution: 0.05           # 맵 셀 크기 (m), 작을수록 정밀
+    # 0.01: 매우 정밀 (메모리 많이 사용)
+    # 0.05: 일반적 (권장)
+    # 0.10: 대략적
+
+    # ========== 스캔 파라미터 ==========
+    max_laser_range: 12.0      # 최대 레이저 거리 (m)
+    # RPLIDAR A1: 12m
+    # RPLIDAR A2: 18m
+    # Hokuyo: 30m
+
+    minimum_time_interval: 0.5      # 최소 스캔 간격 (초)
+    transform_timeout: 0.2          # TF 타임아웃
+    tf_buffer_duration: 30.0        # TF 버퍼 기간
+
+    # ========== 스캔 필터 ==========
+    minimum_angle: -3.14159    # 최소 각도 (rad) = -180°
+    maximum_angle: 3.14159     # 최대 각도 (rad) = 180°
+    minimum_range: 0.1         # 최소 거리 (m), 너무 가까운 데이터 제외
+    maximum_range: 12.0        # 최대 거리 (m)
+
+    # ========== 키프레임 설정 ==========
+    # 새 스캔을 추가하는 기준
+    minimum_travel_distance: 0.5    # 이동 거리 (m)
+    minimum_travel_heading: 0.5     # 회전 각도 (rad) ≈ 29°
+    # 작은 값: 더 많은 스캔 → 정확하지만 느림
+    # 큰 값: 적은 스캔 → 빠르지만 부정확
+
+    # ========== 스캔 매칭 ==========
+    scan_buffer_size: 10            # 매칭에 사용할 스캔 수
+    scan_buffer_maximum_scan_distance: 10.0
+    link_match_minimum_response_fine: 0.1
+    link_scan_maximum_distance: 1.5
+
+    # ========== 루프 클로징 ==========
+    do_loop_closing: true           # 루프 클로징 활성화
+    loop_match_minimum_chain_size: 10
+    loop_match_maximum_variance_coarse: 3.0
+    loop_match_minimum_response_coarse: 0.35
+    loop_match_minimum_response_fine: 0.45
+    loop_search_maximum_distance: 3.0
+    loop_search_space_dimension: 0.3
+    loop_search_space_resolution: 0.05
+
+    # ========== 최적화 (Ceres Solver) ==========
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    # SPARSE_NORMAL_CHOLESKY: 일반적 (권장)
+    # DENSE_QR: 작은 문제
+    # ITERATIVE_SCHUR: 매우 큰 문제
+
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+    ceres_dogleg_type: TRADITIONAL_DOGLEG
+    ceres_loss_function: None
+    # None, HuberLoss, CauchyLoss
+
+    # ========== 성능 ==========
+    stack_size_to_use: 40000000     # 스택 크기 (바이트)
+    enable_interactive_mode: true   # RViz 인터랙티브 모드
+
+    # ========== 발행 주기 ==========
+    transform_publish_period: 0.02  # TF 발행 주기 (초)
+    map_update_interval: 5.0        # 맵 업데이트 주기 (초)
+
+    # ========== 직렬화 ==========
+    map_file_name: ""               # 자동 저장 파일명
+    map_start_pose: [0.0, 0.0, 0.0] # 초기 위치 [x, y, θ]
+    map_start_at_dock: true</code></pre>
+
+                <h2 id="toolbox-mapping">매핑 실습</h2>
+
+                <h3>Step 1: 노드 실행</h3>
+<pre><code># 터미널 1: 로봇 드라이버
+ros2 launch jetbot_bringup jetbot.launch.py
+
+# 터미널 2: LiDAR
+ros2 launch sllidar_ros2 sllidar_a1_launch.py
+
+# 터미널 3: SLAM Toolbox
+ros2 launch slam_toolbox online_async_launch.py \
+    slam_params_file:=~/jetbot_ws/config/slam_params.yaml
+
+# 터미널 4: RViz
+rviz2 -d ~/jetbot_ws/config/slam.rviz
+
+# 터미널 5: 텔레오퍼레이션
+ros2 run teleop_twist_keyboard teleop_twist_keyboard</code></pre>
+
+                <h3>Step 2: 매핑 진행</h3>
+<pre><code># 텔레오퍼레이션 키:
+#   i: 전진
+#   j: 좌회전
+#   l: 우회전
+#   ,: 후진
+#   k: 정지
+
+# 매핑 팁:
+# 1. 천천히 이동 (0.2~0.3 m/s)
+# 2. 회전은 더 천천히
+# 3. 벽을 따라 이동
+# 4. 같은 곳을 다시 방문 (루프 클로징)
+# 5. 복도 끝에서 회전하며 스캔</code></pre>
+
+                <h3>Step 3: 맵 저장</h3>
+<pre><code># 방법 1: map_saver_cli 사용
+ros2 run nav2_map_server map_saver_cli -f ~/maps/my_room
+# 생성 파일: my_room.pgm, my_room.yaml
+
+# 방법 2: 서비스 호출
+ros2 service call /slam_toolbox/save_map slam_toolbox/srv/SaveMap \
+    "{name: {data: '/home/user/maps/my_room'}}"
+
+# 방법 3: RViz 플러그인 (인터랙티브 모드)
+# Panels -> Add New Panel -> SlamToolboxPlugin
+# Save Map 버튼 클릭</code></pre>
+
+                <h2 id="toolbox-localization">위치 추정 (Localization)</h2>
+                <p>기존 맵에서 로봇의 위치만 추정합니다 (맵 수정 없음).</p>
+
+<pre><code># 위치 추정 모드로 실행
+ros2 launch slam_toolbox localization_launch.py \
+    map_file_name:=/home/user/maps/my_room \
+    use_sim_time:=false
+
+# 또는 파라미터 파일에서 모드 변경
+# mode: localization</code></pre>
+
+                <!-- Cartographer 섹션 -->
+                <h1 id="carto-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">Google Cartographer</h1>
+                <p>
+                    <strong>Cartographer</strong>는 Google에서 개발한 SLAM 라이브러리입니다.
+                    Submap 기반의 그래프 최적화로 대규모 환경에서도 정확한 매핑이 가능합니다.
+                </p>
+
+                <h3>특징</h3>
+                <ul>
+                    <li>2D 및 3D SLAM 지원</li>
+                    <li>IMU 데이터 활용</li>
+                    <li>대규모 환경에서 뛰어난 성능</li>
+                    <li>Pure Localization 모드</li>
+                    <li>Lua 기반 설정</li>
+                </ul>
+
+                <h2 id="carto-install">설치</h2>
+<pre><code># ROS 2 Humble용 설치
+sudo apt install ros-humble-cartographer ros-humble-cartographer-ros
+
+# 설치 확인
+ros2 pkg list | grep cartographer</code></pre>
+
+                <h2 id="carto-config">설정 파일 (Lua)</h2>
+
+<pre><code>-- config/jetbot_2d.lua
+include "map_builder.lua"
+include "trajectory_builder.lua"
+
+options = {
+  map_builder = MAP_BUILDER,
+  trajectory_builder = TRAJECTORY_BUILDER,
+
+  -- 프레임 설정
+  map_frame = "map",
+  tracking_frame = "base_link",      -- IMU가 있으면 "imu_link"
+  published_frame = "odom",          -- odom이 있으면 "odom", 없으면 "base_link"
+  odom_frame = "odom",
+  provide_odom_frame = false,        -- odom이 없으면 true
+  publish_frame_projected_to_2d = true,
+
+  -- 센서 사용
+  use_odometry = true,               -- 오도메트리 사용 여부
+  use_nav_sat = false,               -- GPS 사용 여부
+  use_landmarks = false,             -- 랜드마크 사용 여부
+
+  -- 센서 수
+  num_laser_scans = 1,               -- 2D LiDAR 수
+  num_multi_echo_laser_scans = 0,
+  num_subdivisions_per_laser_scan = 1,
+  num_point_clouds = 0,              -- 3D LiDAR 수
+
+  -- 타이밍
+  lookup_transform_timeout_sec = 0.2,
+  submap_publish_period_sec = 0.3,
+  pose_publish_period_sec = 5e-3,
+  trajectory_publish_period_sec = 30e-3,
+
+  -- 측정 샘플링
+  rangefinder_sampling_ratio = 1.0,
+  odometry_sampling_ratio = 1.0,
+  fixed_frame_pose_sampling_ratio = 1.0,
+  imu_sampling_ratio = 1.0,
+  landmarks_sampling_ratio = 1.0,
+}
+
+-- 2D SLAM 설정
+MAP_BUILDER.use_trajectory_builder_2d = true
+MAP_BUILDER.num_background_threads = 4
+
+-- Trajectory Builder 2D 설정
+TRAJECTORY_BUILDER_2D.use_imu_data = false  -- IMU 없으면 false
+TRAJECTORY_BUILDER_2D.min_range = 0.1
+TRAJECTORY_BUILDER_2D.max_range = 12.0
+TRAJECTORY_BUILDER_2D.missing_data_ray_length = 5.0
+TRAJECTORY_BUILDER_2D.num_accumulated_range_data = 1
+
+-- 스캔 매칭
+TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.linear_search_window = 0.1
+TRAJECTORY_BUILDER_2D.real_time_correlative_scan_matcher.angular_search_window = math.rad(20.)
+
+-- Ceres 스캔 매칭
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.occupied_space_weight = 1.
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.translation_weight = 10.
+TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight = 40.
+
+-- 서브맵 설정
+TRAJECTORY_BUILDER_2D.submaps.num_range_data = 90
+TRAJECTORY_BUILDER_2D.submaps.grid_options_2d.resolution = 0.05
+
+-- 루프 클로징 (Pose Graph)
+POSE_GRAPH.optimization_problem.huber_scale = 1e1
+POSE_GRAPH.optimize_every_n_nodes = 35
+POSE_GRAPH.constraint_builder.min_score = 0.55
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.6
+
+return options</code></pre>
+
+                <h3>Launch 파일</h3>
+<pre><code># launch/cartographer.launch.py
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from launch.substitutions import PathJoinSubstitution
+from launch_ros.substitutions import FindPackageShare
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='cartographer_ros',
+            executable='cartographer_node',
+            name='cartographer_node',
+            output='screen',
+            parameters=[{'use_sim_time': False}],
+            arguments=[
+                '-configuration_directory', PathJoinSubstitution([
+                    FindPackageShare('jetbot_slam'), 'config'
+                ]),
+                '-configuration_basename', 'jetbot_2d.lua'
+            ],
+            remappings=[
+                ('scan', '/scan'),
+                ('odom', '/odom'),
+            ],
+        ),
+        Node(
+            package='cartographer_ros',
+            executable='cartographer_occupancy_grid_node',
+            name='cartographer_occupancy_grid_node',
+            output='screen',
+            parameters=[{'use_sim_time': False}],
+            arguments=[
+                '-resolution', '0.05',
+                '-publish_period_sec', '1.0'
+            ],
+        ),
+    ])</code></pre>
+
+                <h2 id="carto-tuning">Cartographer 튜닝</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>문제</th>
+                            <th>파라미터</th>
+                            <th>조정 방향</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>드리프트가 심함</td>
+                            <td>TRAJECTORY_BUILDER_2D.ceres_scan_matcher.rotation_weight</td>
+                            <td>증가 (40→100)</td>
+                        </tr>
+                        <tr>
+                            <td>빠른 이동 시 실패</td>
+                            <td>real_time_correlative_scan_matcher.linear_search_window</td>
+                            <td>증가 (0.1→0.2)</td>
+                        </tr>
+                        <tr>
+                            <td>루프 클로징 안됨</td>
+                            <td>constraint_builder.min_score</td>
+                            <td>감소 (0.55→0.45)</td>
+                        </tr>
+                        <tr>
+                            <td>CPU 사용량 높음</td>
+                            <td>num_background_threads</td>
+                            <td>감소 (4→2)</td>
+                        </tr>
+                        <tr>
+                            <td>맵 해상도 낮음</td>
+                            <td>submaps.grid_options_2d.resolution</td>
+                            <td>감소 (0.05→0.02)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 맵 관리 섹션 -->
+                <h1 id="map-format" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">맵 파일 형식</h1>
+
+                <h3>OccupancyGrid 맵 구조</h3>
+<pre><code># my_map.yaml
+image: my_map.pgm          # 이미지 파일
+resolution: 0.050000       # 미터/픽셀
+origin: [-10.0, -10.0, 0]  # 맵 원점 [x, y, yaw]
+negate: 0                  # 0: 흰색=free, 1: 검은색=free
+occupied_thresh: 0.65      # 점유 임계값 (이상이면 장애물)
+free_thresh: 0.196         # 자유 임계값 (이하이면 자유공간)
+
+# PGM 픽셀 값:
+# 0 (검은색): 장애물 (occupied)
+# 254 (흰색): 자유 공간 (free)
+# 205 (회색): 미탐색 (unknown)</code></pre>
+
+                <h2 id="map-save">맵 저장</h2>
+<pre><code># Nav2 Map Saver
+ros2 run nav2_map_server map_saver_cli -f ~/maps/my_map
+
+# 옵션
+ros2 run nav2_map_server map_saver_cli \
+    -f ~/maps/my_map \
+    --ros-args -p save_map_timeout:=5000
+
+# SLAM Toolbox 서비스
+ros2 service call /slam_toolbox/save_map slam_toolbox/srv/SaveMap \
+    "{name: {data: 'my_map'}}"
+
+# Cartographer pbstream 저장
+ros2 service call /write_state cartographer_ros_msgs/srv/WriteState \
+    "{filename: '/home/user/maps/my_map.pbstream'}"</code></pre>
+
+                <h2 id="map-edit">맵 편집</h2>
+<pre><code># GIMP로 PGM 편집
+gimp ~/maps/my_map.pgm
+
+# 편집 팁:
+# - 검은색(0)으로 가상 벽 추가
+# - 흰색(254)으로 오인식 장애물 제거
+# - 회색(205)으로 진입 금지 구역 설정
+
+# Python으로 맵 처리
+import cv2
+import numpy as np
+
+# 맵 로드
+map_img = cv2.imread('my_map.pgm', cv2.IMREAD_GRAYSCALE)
+
+# 노이즈 제거
+kernel = np.ones((3,3), np.uint8)
+map_cleaned = cv2.morphologyEx(map_img, cv2.MORPH_CLOSE, kernel)
+
+# 저장
+cv2.imwrite('my_map_cleaned.pgm', map_cleaned)</code></pre>
+
+                <h2 id="map-server">Map Server</h2>
+<pre><code># Map Server 실행
+ros2 run nav2_map_server map_server \
+    --ros-args -p yaml_filename:=~/maps/my_map.yaml
+
+# Lifecycle 관리
+ros2 lifecycle set /map_server configure
+ros2 lifecycle set /map_server activate
+
+# 또는 Launch 파일 사용
+ros2 launch nav2_bringup localization_launch.py \
+    map:=~/maps/my_map.yaml</code></pre>
+
+                <!-- 고급 주제 -->
+                <h1 id="loop-closing" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">고급 주제</h1>
+
+                <h2>루프 클로징 (Loop Closing)</h2>
+                <p>
+                    로봇이 이전에 방문한 장소를 다시 인식하여 누적 오차를 보정합니다.
+                </p>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                      LOOP CLOSING                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   Before Loop Closing:          After Loop Closing:             │
+│                                                                  │
+│   Start ─────────────┐          Start ─────────────┐            │
+│         ↓            │                ↓            │            │
+│         ↓            │                ↓            │            │
+│         ↓            │                ↓            │            │
+│         ↓            │                ↓            │            │
+│         End ←────────┘                End = Start!              │
+│                                                                  │
+│   (드리프트로 인해                 (루프 감지 후                  │
+│    시작점과 끝점 불일치)           전체 경로 최적화)              │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="multi-floor">다층 매핑</h2>
+<pre><code># 각 층을 별도로 매핑
+ros2 run nav2_map_server map_saver_cli -f ~/maps/floor_1
+ros2 run nav2_map_server map_saver_cli -f ~/maps/floor_2
+
+# 층 전환 시 맵 교체
+ros2 service call /map_server/load_map nav2_msgs/srv/LoadMap \
+    "{map_url: '/home/user/maps/floor_2.yaml'}"</code></pre>
+
+                <h2 id="visual-slam">Visual SLAM 소개</h2>
+                <p>카메라만으로 SLAM을 수행합니다. JetBot의 GPU를 활용할 수 있습니다.</p>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>알고리즘</th>
+                            <th>센서</th>
+                            <th>특징</th>
+                            <th>ROS 2 지원</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>ORB-SLAM3</strong></td>
+                            <td>Mono/Stereo/RGB-D</td>
+                            <td>특징점 기반, 정확</td>
+                            <td>비공식</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RTAB-Map</strong></td>
+                            <td>RGB-D/Stereo</td>
+                            <td>Loop closure, 3D</td>
+                            <td>공식</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Isaac ROS Visual SLAM</strong></td>
+                            <td>Stereo</td>
+                            <td>NVIDIA GPU 가속</td>
+                            <td>공식</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Stella VSLAM</strong></td>
+                            <td>Mono/Stereo</td>
+                            <td>ORB-SLAM2 기반</td>
+                            <td>있음</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+<pre><code># RTAB-Map 설치
+sudo apt install ros-humble-rtabmap-ros
+
+# RGB-D SLAM 실행
+ros2 launch rtabmap_launch rtabmap.launch.py \
+    rgb_topic:=/camera/color/image_raw \
+    depth_topic:=/camera/depth/image_raw \
+    camera_info_topic:=/camera/color/camera_info</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>SLAM 선택 가이드:</strong>
+                    <ul>
+                        <li><strong>JetBot 기본</strong>: SLAM Toolbox + RPLIDAR</li>
+                        <li><strong>정밀 매핑</strong>: Cartographer</li>
+                        <li><strong>3D 매핑</strong>: RTAB-Map + RGB-D 카메라</li>
+                        <li><strong>GPU 활용</strong>: Isaac ROS Visual SLAM</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="visualization.html" class="btn btn-secondary">&larr; 시각화 도구</a>
+                        <a href="navigation.html" class="btn btn-primary" style="margin-left: 1rem;">다음: Navigation &rarr;</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

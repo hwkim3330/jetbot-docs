@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Navigation - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="ros-advanced.html">ROS 심화</a></li>
+                <li><a href="web-tools.html">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>Nav2 개요</h4>
+                <ul>
+                    <li><a href="#nav2-intro">Nav2란?</a></li>
+                    <li><a href="#nav2-architecture">아키텍처</a></li>
+                    <li><a href="#nav2-install">설치</a></li>
+                    <li><a href="#nav2-launch">실행</a></li>
+                </ul>
+                <h4>Costmap</h4>
+                <ul>
+                    <li><a href="#costmap-intro">Costmap 개념</a></li>
+                    <li><a href="#costmap-global">Global Costmap</a></li>
+                    <li><a href="#costmap-local">Local Costmap</a></li>
+                    <li><a href="#costmap-layers">레이어 설정</a></li>
+                </ul>
+                <h4>경로 계획</h4>
+                <ul>
+                    <li><a href="#planner-intro">Planner Server</a></li>
+                    <li><a href="#planner-navfn">NavFn</a></li>
+                    <li><a href="#planner-smac">Smac Planner</a></li>
+                    <li><a href="#planner-theta">Theta*</a></li>
+                </ul>
+                <h4>경로 추종</h4>
+                <ul>
+                    <li><a href="#controller-intro">Controller Server</a></li>
+                    <li><a href="#controller-dwb">DWB</a></li>
+                    <li><a href="#controller-rpp">Regulated Pure Pursuit</a></li>
+                    <li><a href="#controller-mppi">MPPI</a></li>
+                </ul>
+                <h4>Behavior Tree</h4>
+                <ul>
+                    <li><a href="#bt-intro">BT Navigator</a></li>
+                    <li><a href="#bt-default">기본 BT</a></li>
+                    <li><a href="#bt-custom">커스텀 BT</a></li>
+                </ul>
+                <h4>실전 활용</h4>
+                <ul>
+                    <li><a href="#waypoint">Waypoint 주행</a></li>
+                    <li><a href="#recovery">Recovery 동작</a></li>
+                    <li><a href="#tuning">파라미터 튜닝</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <a href="ros-advanced.html">ROS 심화</a> / <span>Navigation</span>
+                </div>
+
+                <h1 id="nav2-intro">Nav2 (Navigation 2)</h1>
+                <p>
+                    <strong>Nav2</strong>는 ROS 2의 공식 자율주행 프레임워크입니다.
+                    맵 기반 경로 계획, 장애물 회피, 행동 트리 기반의 유연한 내비게이션을 제공합니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>Nav2의 핵심 기능:</strong>
+                    <ul>
+                        <li>전역 경로 계획 (Global Planning)</li>
+                        <li>지역 경로 추종 (Local Control)</li>
+                        <li>장애물 회피 (Obstacle Avoidance)</li>
+                        <li>복구 동작 (Recovery Behaviors)</li>
+                        <li>행동 트리 기반 태스크 관리</li>
+                    </ul>
+                </div>
+
+                <h2 id="nav2-architecture">Nav2 아키텍처</h2>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            NAV2 ARCHITECTURE                                 │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌────────────────────────────────────────────────────────────────────────┐ │
+│  │                        BT Navigator                                     │ │
+│  │  ┌──────────────────────────────────────────────────────────────────┐  │ │
+│  │  │                    Behavior Tree (XML)                            │  │ │
+│  │  │                                                                   │  │ │
+│  │  │   [Sequence]                                                      │  │ │
+│  │  │      ├── ComputePathToPose ──────────────▶ Planner Server        │  │ │
+│  │  │      ├── FollowPath ─────────────────────▶ Controller Server     │  │ │
+│  │  │      └── [Recovery] ─────────────────────▶ Behavior Server       │  │ │
+│  │  │           ├── Spin                                                │  │ │
+│  │  │           ├── BackUp                                              │  │ │
+│  │  │           └── Wait                                                │  │ │
+│  │  └──────────────────────────────────────────────────────────────────┘  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│            ┌───────────────────────┼───────────────────────┐                │
+│            ▼                       ▼                       ▼                │
+│  ┌──────────────────┐   ┌──────────────────┐   ┌──────────────────┐        │
+│  │  Planner Server  │   │ Controller Server│   │  Behavior Server │        │
+│  │                  │   │                  │   │                  │        │
+│  │ • NavFn          │   │ • DWB            │   │ • Spin           │        │
+│  │ • Smac 2D        │   │ • Pure Pursuit   │   │ • BackUp         │        │
+│  │ • Smac Hybrid    │   │ • MPPI           │   │ • Wait           │        │
+│  │ • Theta*         │   │ • Rotation Shim  │   │ • DriveOnHeading │        │
+│  └────────┬─────────┘   └────────┬─────────┘   └──────────────────┘        │
+│           │                      │                                          │
+│           └──────────┬───────────┘                                          │
+│                      ▼                                                      │
+│  ┌───────────────────────────────────────────────────────────────────────┐ │
+│  │                          Costmap 2D                                    │ │
+│  │  ┌─────────────────────────────┐  ┌─────────────────────────────────┐ │ │
+│  │  │      Global Costmap         │  │       Local Costmap             │ │ │
+│  │  │ • Static Layer              │  │ • Obstacle Layer                │ │ │
+│  │  │ • Obstacle Layer            │  │ • Voxel Layer                   │ │ │
+│  │  │ • Inflation Layer           │  │ • Inflation Layer               │ │ │
+│  │  └─────────────────────────────┘  └─────────────────────────────────┘ │ │
+│  └───────────────────────────────────────────────────────────────────────┘ │
+│                                    │                                         │
+│                                    ▼                                         │
+│  ┌───────────────────────────────────────────────────────────────────────┐ │
+│  │                            Sensors                                     │ │
+│  │        /scan (LiDAR)    /odom (Odometry)    /map (Map Server)         │ │
+│  └───────────────────────────────────────────────────────────────────────┘ │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="nav2-install">설치</h2>
+<pre><code># Nav2 전체 설치
+sudo apt install ros-humble-navigation2
+sudo apt install ros-humble-nav2-bringup
+
+# 개별 패키지 설치
+sudo apt install ros-humble-nav2-planner
+sudo apt install ros-humble-nav2-controller
+sudo apt install ros-humble-nav2-bt-navigator
+sudo apt install ros-humble-nav2-costmap-2d
+sudo apt install ros-humble-nav2-map-server
+sudo apt install ros-humble-nav2-amcl
+
+# 설치 확인
+ros2 pkg list | grep nav2</code></pre>
+
+                <h2 id="nav2-launch">실행</h2>
+<pre><code># 방법 1: 전체 Nav2 스택 (맵 포함)
+ros2 launch nav2_bringup bringup_launch.py \
+    map:=/home/user/maps/my_map.yaml \
+    params_file:=/home/user/config/nav2_params.yaml \
+    use_sim_time:=false
+
+# 방법 2: Navigation만 (맵 서버 별도)
+ros2 launch nav2_bringup navigation_launch.py \
+    params_file:=/home/user/config/nav2_params.yaml
+
+# 방법 3: 위치 추정 + Navigation
+ros2 launch nav2_bringup localization_launch.py \
+    map:=/home/user/maps/my_map.yaml
+
+# SLAM과 함께 (맵 없이)
+ros2 launch nav2_bringup navigation_launch.py slam:=True</code></pre>
+
+                <!-- Costmap 섹션 -->
+                <h1 id="costmap-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">Costmap 2D</h1>
+                <p>
+                    <strong>Costmap</strong>은 로봇 주변 환경의 장애물 정보를
+                    2D 그리드 형태로 표현합니다. 각 셀은 0~255의 비용(cost) 값을 가집니다.
+                </p>
+
+                <h3>Cost 값의 의미</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Cost 값</th>
+                            <th>이름</th>
+                            <th>의미</th>
+                            <th>색상 (RViz)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>0</strong></td>
+                            <td>FREE_SPACE</td>
+                            <td>자유 공간</td>
+                            <td>투명</td>
+                        </tr>
+                        <tr>
+                            <td><strong>1~252</strong></td>
+                            <td>Cost Gradient</td>
+                            <td>장애물에서의 거리에 따른 비용</td>
+                            <td>파랑→빨강</td>
+                        </tr>
+                        <tr>
+                            <td><strong>253</strong></td>
+                            <td>INSCRIBED_INFLATED</td>
+                            <td>로봇이 지나가면 충돌</td>
+                            <td>빨강</td>
+                        </tr>
+                        <tr>
+                            <td><strong>254</strong></td>
+                            <td>LETHAL_OBSTACLE</td>
+                            <td>치명적 장애물 (벽 등)</td>
+                            <td>보라</td>
+                        </tr>
+                        <tr>
+                            <td><strong>255</strong></td>
+                            <td>NO_INFORMATION</td>
+                            <td>미탐색 영역</td>
+                            <td>회색</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="costmap-global">Global Costmap</h2>
+                <p>전체 맵에 대한 Costmap입니다. 전역 경로 계획에 사용됩니다.</p>
+
+<pre><code>global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0        # 업데이트 주기 (Hz)
+      publish_frequency: 1.0       # 발행 주기 (Hz)
+      global_frame: map            # 전역 프레임
+      robot_base_frame: base_link  # 로봇 프레임
+
+      # 로봇 크기
+      robot_radius: 0.09           # 원형 로봇 반경 (m)
+      # 또는 사각형:
+      # footprint: "[[0.09, 0.09], [0.09, -0.09], [-0.09, -0.09], [-0.09, 0.09]]"
+
+      resolution: 0.05             # 셀 크기 (m)
+      track_unknown_space: true    # 미탐색 영역 추적
+
+      # 레이어 구성
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+        enabled: true
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 12.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.0
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0   # 비용 감소율
+        inflation_radius: 0.30     # 팽창 반경 (m)</code></pre>
+
+                <h2 id="costmap-local">Local Costmap</h2>
+                <p>로봇 주변의 롤링 윈도우 Costmap입니다. 지역 경로 추종에 사용됩니다.</p>
+
+<pre><code>local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0        # 더 빠른 업데이트
+      publish_frequency: 2.0
+      global_frame: odom           # odom 프레임 사용
+      robot_base_frame: base_link
+
+      rolling_window: true         # 롤링 윈도우 활성화
+      width: 3                     # 윈도우 너비 (m)
+      height: 3                    # 윈도우 높이 (m)
+      resolution: 0.05
+
+      robot_radius: 0.09
+
+      plugins: ["voxel_layer", "inflation_layer"]
+
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: true
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 12.0
+          obstacle_max_range: 10.0
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.30</code></pre>
+
+                <h2 id="costmap-layers">Costmap 레이어</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>레이어</th>
+                            <th>플러그인</th>
+                            <th>기능</th>
+                            <th>사용 위치</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Static Layer</strong></td>
+                            <td>StaticLayer</td>
+                            <td>정적 맵 로드</td>
+                            <td>Global</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Obstacle Layer</strong></td>
+                            <td>ObstacleLayer</td>
+                            <td>2D 센서 장애물</td>
+                            <td>Global/Local</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Voxel Layer</strong></td>
+                            <td>VoxelLayer</td>
+                            <td>3D 장애물 (2D 투영)</td>
+                            <td>Local</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Inflation Layer</strong></td>
+                            <td>InflationLayer</td>
+                            <td>장애물 팽창</td>
+                            <td>Global/Local</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Range Sensor Layer</strong></td>
+                            <td>RangeSensorLayer</td>
+                            <td>초음파/IR 센서</td>
+                            <td>Local</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SpeedLimit Layer</strong></td>
+                            <td>SpeedFilterLayer</td>
+                            <td>속도 제한 영역</td>
+                            <td>Global</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- 경로 계획 섹션 -->
+                <h1 id="planner-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">경로 계획 (Planner Server)</h1>
+                <p>
+                    <strong>Planner Server</strong>는 시작점에서 목표점까지의
+                    전역 경로를 계획합니다.
+                </p>
+
+                <h2 id="planner-navfn">NavFn Planner</h2>
+                <p>기본 A*/Dijkstra 기반 플래너입니다.</p>
+
+<pre><code>planner_server:
+  ros__parameters:
+    expected_planner_frequency: 20.0
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5           # 목표 허용 오차 (m)
+      use_astar: true          # true: A*, false: Dijkstra
+      allow_unknown: true      # 미탐색 영역 통과 허용</code></pre>
+
+                <h2 id="planner-smac">Smac Planner</h2>
+                <p>State Lattice 기반의 고급 플래너입니다.</p>
+
+<pre><code># Smac 2D (일반 이동 로봇)
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlanner2D"
+      tolerance: 0.25
+      downsample_costmap: false
+      downsampling_factor: 1
+      allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 5.0
+      cost_travel_multiplier: 2.0
+      use_final_approach_orientation: false
+      smoother:
+        max_iterations: 1000
+        w_smooth: 0.3
+        w_data: 0.2
+        tolerance: 1.0e-10</code></pre>
+
+<pre><code># Smac Hybrid-A* (차량형 로봇)
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_smac_planner/SmacPlannerHybrid"
+      tolerance: 0.25
+      downsample_costmap: false
+      allow_unknown: true
+      max_iterations: 1000000
+      max_planning_time: 5.0
+      motion_model_for_search: "DUBIN"  # DUBIN, REEDS_SHEPP
+      angle_quantization_bins: 72       # 360/72 = 5도 간격
+      analytic_expansion_ratio: 3.5
+      minimum_turning_radius: 0.20      # 최소 회전 반경 (m)
+      reverse_penalty: 2.0              # 후진 패널티
+      change_penalty: 0.0
+      non_straight_penalty: 1.2
+      cost_penalty: 2.0</code></pre>
+
+                <h2 id="planner-theta">Theta* Planner</h2>
+                <p>Any-angle 경로 계획으로 부드러운 직선 경로를 생성합니다.</p>
+
+<pre><code>planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+
+    GridBased:
+      plugin: "nav2_theta_star_planner/ThetaStarPlanner"
+      tolerance: 0.25
+      allow_unknown: true
+      how_many_corners: 8      # 8: 8방향, 4: 4방향
+      w_euc_cost: 1.0         # 유클리드 거리 가중치
+      w_traversal_cost: 2.0   # 통과 비용 가중치</code></pre>
+
+                <!-- 경로 추종 섹션 -->
+                <h1 id="controller-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">경로 추종 (Controller Server)</h1>
+                <p>
+                    <strong>Controller Server</strong>는 계획된 경로를 따라
+                    로봇을 실시간으로 제어합니다.
+                </p>
+
+                <h2 id="controller-dwb">DWB Controller</h2>
+                <p>Dynamic Window Approach 기반의 컨트롤러입니다.</p>
+
+<pre><code>controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    controller_plugins: ["FollowPath"]
+
+    FollowPath:
+      plugin: "dwb_core::DWBLocalPlanner"
+
+      # 속도 제한
+      min_vel_x: 0.0
+      min_vel_y: 0.0
+      max_vel_x: 0.3
+      max_vel_y: 0.0
+      max_vel_theta: 1.0
+      min_speed_xy: 0.0
+      max_speed_xy: 0.3
+      min_speed_theta: 0.0
+
+      # 가속도 제한
+      acc_lim_x: 2.5
+      acc_lim_y: 0.0
+      acc_lim_theta: 3.2
+      decel_lim_x: -2.5
+      decel_lim_y: 0.0
+      decel_lim_theta: -3.2
+
+      # 샘플링
+      vx_samples: 20
+      vy_samples: 0
+      vtheta_samples: 20
+      sim_time: 1.7
+
+      # 목표 설정
+      linear_granularity: 0.05
+      angular_granularity: 0.025
+      transform_tolerance: 0.2
+      xy_goal_tolerance: 0.1
+      trans_stopped_velocity: 0.25
+      short_circuit_trajectory_evaluation: true
+
+      # 평가 함수 (Critics)
+      critics: ["RotateToGoal", "Oscillation", "BaseObstacle", "GoalAlign", "PathAlign", "PathDist", "GoalDist"]
+      BaseObstacle.scale: 0.02
+      PathAlign.scale: 32.0
+      PathAlign.forward_point_distance: 0.1
+      GoalAlign.scale: 24.0
+      GoalAlign.forward_point_distance: 0.1
+      PathDist.scale: 32.0
+      GoalDist.scale: 24.0
+      RotateToGoal.scale: 32.0
+      RotateToGoal.slowing_factor: 5.0
+      RotateToGoal.lookahead_time: -1.0</code></pre>
+
+                <h2 id="controller-rpp">Regulated Pure Pursuit</h2>
+                <p><strong>JetBot에 권장!</strong> 부드러운 경로 추종이 가능합니다.</p>
+
+<pre><code>controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    # Progress Checker
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    # Goal Checker
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.10     # 위치 허용 오차 (m)
+      yaw_goal_tolerance: 0.10    # 각도 허용 오차 (rad)
+      stateful: true
+
+    # Regulated Pure Pursuit Controller
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+
+      # 기본 속도
+      desired_linear_vel: 0.3     # 목표 선속도 (m/s)
+      lookahead_dist: 0.4         # Lookahead 거리 (m)
+      min_lookahead_dist: 0.3
+      max_lookahead_dist: 0.9
+      lookahead_time: 1.5         # 시간 기반 lookahead
+
+      # 회전
+      rotate_to_heading_angular_vel: 0.5
+      rotate_to_heading_min_angle: 0.785  # 45도
+
+      # 속도 조절
+      use_velocity_scaled_lookahead_dist: false
+      min_approach_linear_velocity: 0.05
+      approach_velocity_scaling_dist: 0.6
+
+      # 충돌 감지
+      use_collision_detection: true
+      max_allowed_time_to_collision_up_to_carrot: 1.0
+
+      # 속도 스케일링 (커브에서 감속)
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.9
+      regulated_linear_scaling_min_speed: 0.25
+
+      # 기타
+      allow_reversing: false
+      max_angular_accel: 1.0
+      max_robot_pose_search_dist: 10.0
+      transform_tolerance: 0.1</code></pre>
+
+                <h2 id="controller-mppi">MPPI Controller</h2>
+                <p>Model Predictive Path Integral 기반 최적 컨트롤러입니다. GPU 가속 가능!</p>
+
+<pre><code>controller_server:
+  ros__parameters:
+    controller_plugins: ["FollowPath"]
+
+    FollowPath:
+      plugin: "nav2_mppi_controller::MPPIController"
+
+      # 시간 설정
+      time_steps: 56
+      model_dt: 0.05
+      batch_size: 2000
+      vx_std: 0.2
+      vy_std: 0.0
+      wz_std: 0.4
+      vx_max: 0.5
+      vx_min: -0.35
+      vy_max: 0.0
+      wz_max: 1.9
+
+      # 반복
+      iteration_count: 1
+      prune_distance: 1.7
+      transform_tolerance: 0.1
+      temperature: 0.3
+      gamma: 0.015
+
+      motion_model: "DiffDrive"  # "Ackermann", "Omni"
+
+      critics: ["ConstraintCritic", "ObstaclesCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
+
+      ConstraintCritic:
+        enabled: true
+        cost_weight: 4.0
+        cost_power: 1
+
+      ObstaclesCritic:
+        enabled: true
+        cost_weight: 1.0
+        repulsion_weight: 0.05
+        critical_weight: 20.0
+        consider_footprint: false
+        collision_cost: 10000.0
+        collision_margin_distance: 0.1
+        near_goal_distance: 0.5
+
+      GoalCritic:
+        enabled: true
+        cost_weight: 5.0
+        cost_power: 1
+        threshold_to_consider: 1.0
+
+      GoalAngleCritic:
+        enabled: true
+        cost_weight: 3.0
+        cost_power: 1
+        threshold_to_consider: 0.5
+
+      PreferForwardCritic:
+        enabled: true
+        cost_weight: 5.0
+        cost_power: 1
+        threshold_to_consider: 0.5</code></pre>
+
+                <!-- Behavior Tree 섹션 -->
+                <h1 id="bt-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">Behavior Tree Navigator</h1>
+                <p>
+                    Nav2는 <strong>Behavior Tree (BT)</strong>를 사용하여
+                    내비게이션 로직을 유연하게 구성합니다.
+                </p>
+
+                <h2 id="bt-default">기본 BT 구조</h2>
+<pre><code>&lt;root main_tree_to_execute="MainTree"&gt;
+  &lt;BehaviorTree ID="MainTree"&gt;
+    &lt;RecoveryNode number_of_retries="6" name="NavigateRecovery"&gt;
+      &lt;PipelineSequence name="NavigateWithReplanning"&gt;
+
+        &lt;!-- 1. 경로 계획 --&gt;
+        &lt;RateController hz="1.0"&gt;
+          &lt;RecoveryNode number_of_retries="1" name="ComputePathToPose"&gt;
+            &lt;ComputePathToPose goal="{goal}" path="{path}"
+                               planner_id="GridBased"/&gt;
+            &lt;ReactiveFallback name="ComputePathToPoseRecoveryFallback"&gt;
+              &lt;GoalUpdated/&gt;
+              &lt;ClearEntireCostmap name="ClearGlobalCostmap-Context"
+                                  service_name="global_costmap/clear_entirely_global_costmap"/&gt;
+            &lt;/ReactiveFallback&gt;
+          &lt;/RecoveryNode&gt;
+        &lt;/RateController&gt;
+
+        &lt;!-- 2. 경로 추종 --&gt;
+        &lt;RecoveryNode number_of_retries="1" name="FollowPath"&gt;
+          &lt;FollowPath path="{path}" controller_id="FollowPath"/&gt;
+          &lt;ReactiveFallback name="FollowPathRecoveryFallback"&gt;
+            &lt;GoalUpdated/&gt;
+            &lt;ClearEntireCostmap name="ClearLocalCostmap-Context"
+                                service_name="local_costmap/clear_entirely_local_costmap"/&gt;
+          &lt;/ReactiveFallback&gt;
+        &lt;/RecoveryNode&gt;
+
+      &lt;/PipelineSequence&gt;
+
+      &lt;!-- 3. 복구 동작 --&gt;
+      &lt;ReactiveFallback name="RecoveryFallback"&gt;
+        &lt;GoalUpdated/&gt;
+        &lt;RoundRobin name="RecoveryActions"&gt;
+          &lt;Sequence name="ClearingActions"&gt;
+            &lt;ClearEntireCostmap name="ClearLocalCostmap-Subtree"
+                                service_name="local_costmap/clear_entirely_local_costmap"/&gt;
+            &lt;ClearEntireCostmap name="ClearGlobalCostmap-Subtree"
+                                service_name="global_costmap/clear_entirely_global_costmap"/&gt;
+          &lt;/Sequence&gt;
+          &lt;Spin spin_dist="1.57"/&gt;
+          &lt;Wait wait_duration="5"/&gt;
+          &lt;BackUp backup_dist="0.15" backup_speed="0.025"/&gt;
+        &lt;/RoundRobin&gt;
+      &lt;/ReactiveFallback&gt;
+
+    &lt;/RecoveryNode&gt;
+  &lt;/BehaviorTree&gt;
+&lt;/root&gt;</code></pre>
+
+                <h2 id="bt-custom">커스텀 BT 사용</h2>
+<pre><code>bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+
+    # 커스텀 BT 파일 지정
+    default_bt_xml_filename: "/home/user/config/my_nav_bt.xml"
+
+    # BT 노드 플러그인
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_compute_path_through_poses_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_drive_on_heading_bt_node
+      - nav2_clear_costmap_service_bt_node
+      - nav2_is_stuck_condition_bt_node
+      - nav2_goal_reached_condition_bt_node
+      - nav2_goal_updated_condition_bt_node
+      - nav2_rate_controller_bt_node
+      - nav2_recovery_node_bt_node
+      - nav2_pipeline_sequence_bt_node
+      - nav2_round_robin_node_bt_node</code></pre>
+
+                <!-- 실전 활용 섹션 -->
+                <h1 id="waypoint" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">실전 활용</h1>
+
+                <h2>Waypoint 주행</h2>
+<pre><code># CLI로 단일 목표 전송
+ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
+    "{pose: {header: {frame_id: 'map'}, pose: {position: {x: 2.0, y: 1.0, z: 0.0}, orientation: {w: 1.0}}}}"
+
+# 다중 웨이포인트
+ros2 action send_goal /follow_waypoints nav2_msgs/action/FollowWaypoints \
+    "{poses: [
+        {header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 0.0}}},
+        {header: {frame_id: 'map'}, pose: {position: {x: 2.0, y: 1.0}}},
+        {header: {frame_id: 'map'}, pose: {position: {x: 0.0, y: 2.0}}}
+    ]}"</code></pre>
+
+                <h3>Python으로 Navigation 제어</h3>
+<pre><code>import rclpy
+from rclpy.node import Node
+from rclpy.action import ActionClient
+from nav2_msgs.action import NavigateToPose
+from geometry_msgs.msg import PoseStamped
+
+class NavClient(Node):
+    def __init__(self):
+        super().__init__('nav_client')
+        self.nav_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        self.nav_client.wait_for_server()
+
+    def go_to_pose(self, x, y, yaw=0.0):
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = 'map'
+        goal_msg.pose.header.stamp = self.get_clock().now().to_msg()
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.orientation.w = 1.0  # TODO: yaw to quaternion
+
+        self.get_logger().info(f'Navigating to ({x}, {y})')
+
+        send_goal_future = self.nav_client.send_goal_async(
+            goal_msg,
+            feedback_callback=self.feedback_callback
+        )
+        send_goal_future.add_done_callback(self.goal_response_callback)
+
+    def goal_response_callback(self, future):
+        goal_handle = future.result()
+        if not goal_handle.accepted:
+            self.get_logger().info('Goal rejected')
+            return
+        self.get_logger().info('Goal accepted')
+        result_future = goal_handle.get_result_async()
+        result_future.add_done_callback(self.result_callback)
+
+    def feedback_callback(self, feedback_msg):
+        feedback = feedback_msg.feedback
+        self.get_logger().info(f'Distance remaining: {feedback.distance_remaining}')
+
+    def result_callback(self, future):
+        result = future.result().result
+        self.get_logger().info(f'Navigation result: {result}')
+
+def main():
+    rclpy.init()
+    nav = NavClient()
+    nav.go_to_pose(2.0, 1.0)
+    rclpy.spin(nav)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()</code></pre>
+
+                <h2 id="recovery">Recovery 동작</h2>
+<pre><code>behavior_server:
+  ros__parameters:
+    costmap_topic: local_costmap/costmap_raw
+    footprint_topic: local_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "wait"]
+
+    spin:
+      plugin: "nav2_behaviors/Spin"
+
+    backup:
+      plugin: "nav2_behaviors/BackUp"
+
+    drive_on_heading:
+      plugin: "nav2_behaviors/DriveOnHeading"
+
+    wait:
+      plugin: "nav2_behaviors/Wait"
+
+    global_frame: odom
+    robot_base_frame: base_link
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    max_rotational_vel: 1.0
+    min_rotational_vel: 0.4
+    rotational_acc_lim: 3.2</code></pre>
+
+                <h2 id="tuning">파라미터 튜닝 가이드</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>증상</th>
+                            <th>조정할 파라미터</th>
+                            <th>권장 값</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>로봇이 너무 느림</td>
+                            <td>desired_linear_vel, max_vel_x</td>
+                            <td>0.3→0.5</td>
+                        </tr>
+                        <tr>
+                            <td>회전이 느림</td>
+                            <td>rotate_to_heading_angular_vel</td>
+                            <td>0.5→1.0</td>
+                        </tr>
+                        <tr>
+                            <td>장애물에 가까이 감</td>
+                            <td>inflation_radius</td>
+                            <td>0.2→0.4</td>
+                        </tr>
+                        <tr>
+                            <td>경로가 벽에 붙음</td>
+                            <td>cost_scaling_factor</td>
+                            <td>3.0→5.0</td>
+                        </tr>
+                        <tr>
+                            <td>목표 도달 못함</td>
+                            <td>xy_goal_tolerance</td>
+                            <td>0.05→0.15</td>
+                        </tr>
+                        <tr>
+                            <td>경로 진동</td>
+                            <td>lookahead_dist</td>
+                            <td>0.3→0.5</td>
+                        </tr>
+                        <tr>
+                            <td>커브에서 튐</td>
+                            <td>regulated_linear_scaling_min_radius</td>
+                            <td>0.9→1.5</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <strong>JetBot Navigation 설정 요약:</strong>
+                    <ul>
+                        <li><strong>Planner</strong>: NavFn (간단) 또는 Smac 2D (고급)</li>
+                        <li><strong>Controller</strong>: Regulated Pure Pursuit (권장)</li>
+                        <li><strong>속도</strong>: 0.3 m/s (안전), 0.5 m/s (빠름)</li>
+                        <li><strong>Inflation</strong>: 0.2~0.3m (로봇 크기의 2~3배)</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="slam.html" class="btn btn-secondary">&larr; SLAM</a>
+                        <a href="web-tools.html" class="btn btn-primary" style="margin-left: 1rem;">다음: Web Tools &rarr;</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

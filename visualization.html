@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>시각화 도구 - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="ros-advanced.html">ROS 심화</a></li>
+                <li><a href="web-tools.html">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>RViz 2</h4>
+                <ul>
+                    <li><a href="#rviz-intro">RViz 소개</a></li>
+                    <li><a href="#rviz-install">설치 및 실행</a></li>
+                    <li><a href="#rviz-displays">Display 타입</a></li>
+                    <li><a href="#rviz-config">설정 파일</a></li>
+                    <li><a href="#rviz-panels">패널 구성</a></li>
+                    <li><a href="#rviz-interactive">Interactive Marker</a></li>
+                </ul>
+                <h4>RQt 도구</h4>
+                <ul>
+                    <li><a href="#rqt-intro">RQt 소개</a></li>
+                    <li><a href="#rqt-graph">rqt_graph</a></li>
+                    <li><a href="#rqt-plot">rqt_plot</a></li>
+                    <li><a href="#rqt-image">rqt_image_view</a></li>
+                    <li><a href="#rqt-console">rqt_console</a></li>
+                    <li><a href="#rqt-tf">rqt_tf_tree</a></li>
+                    <li><a href="#rqt-reconfigure">rqt_reconfigure</a></li>
+                </ul>
+                <h4>Gazebo 시뮬레이션</h4>
+                <ul>
+                    <li><a href="#gazebo-intro">Gazebo 소개</a></li>
+                    <li><a href="#gazebo-install">설치</a></li>
+                    <li><a href="#gazebo-world">World 파일</a></li>
+                    <li><a href="#gazebo-robot">로봇 모델</a></li>
+                    <li><a href="#gazebo-plugins">플러그인</a></li>
+                    <li><a href="#gazebo-sensors">센서 시뮬레이션</a></li>
+                </ul>
+                <h4>기타 도구</h4>
+                <ul>
+                    <li><a href="#foxglove">Foxglove Studio</a></li>
+                    <li><a href="#plotjuggler">PlotJuggler</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <a href="ros-advanced.html">ROS 심화</a> / <span>시각화 도구</span>
+                </div>
+
+                <h1 id="rviz-intro">RViz 2 - 3D 시각화 도구</h1>
+                <p>
+                    <strong>RViz 2</strong>는 ROS 2의 핵심 3D 시각화 도구입니다.
+                    센서 데이터, 로봇 모델, TF 트리, 지도, 경로 등 로봇의 모든 상태를
+                    실시간으로 시각화할 수 있습니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>RViz vs Gazebo:</strong>
+                    <ul>
+                        <li><strong>RViz</strong>: 시각화 도구 (실제 로봇 데이터 표시)</li>
+                        <li><strong>Gazebo</strong>: 시뮬레이터 (가상 로봇/환경 시뮬레이션)</li>
+                    </ul>
+                </div>
+
+                <h2 id="rviz-install">설치 및 실행</h2>
+<pre><code># RViz 2 설치 (ros-humble-desktop에 포함)
+sudo apt install ros-humble-rviz2
+
+# 기본 실행
+rviz2
+
+# 설정 파일과 함께 실행
+rviz2 -d ~/jetbot_ws/config/jetbot.rviz
+
+# 특정 Fixed Frame으로 실행
+rviz2 --fixed-frame map</code></pre>
+
+                <h3>RViz 2 인터페이스</h3>
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────┐
+│                           RViz 2 Interface                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐  ┌───────────────────────────────────┐  ┌───────────┐ │
+│  │   Displays  │  │                                   │  │   Views   │ │
+│  │   Panel     │  │          3D Viewport              │  │   Panel   │ │
+│  │             │  │                                   │  │           │ │
+│  │ ☑ Grid      │  │      ┌─────┐                     │  │ Type:     │ │
+│  │ ☑ TF        │  │      │Robot│                     │  │  Orbit    │ │
+│  │ ☑ RobotModel│  │      └──┬──┘                     │  │           │ │
+│  │ ☑ LaserScan │  │    ════╪════  (LiDAR)            │  │ Distance: │ │
+│  │ ☑ Map       │  │         │                        │  │  5.0m     │ │
+│  │ ☑ Path      │  │    ─────┴─────                   │  │           │ │
+│  │             │  │                                   │  │ Yaw: 0°   │ │
+│  │ [Add]       │  │                                   │  │ Pitch: 30°│ │
+│  └─────────────┘  └───────────────────────────────────┘  └───────────┘ │
+│  ┌─────────────────────────────────────────────────────────────────────┐│
+│  │ Tool Bar: [Interact] [Move] [Select] [2D Goal] [2D Pose] [Measure] ││
+│  └─────────────────────────────────────────────────────────────────────┘│
+│  Status: OK | Fixed Frame: map | FPS: 30                                │
+└─────────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="rviz-displays">Display 타입 상세</h2>
+
+                <h3>기본 Display</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Display</th>
+                            <th>메시지 타입</th>
+                            <th>용도</th>
+                            <th>주요 설정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Grid</strong></td>
+                            <td>-</td>
+                            <td>기준 그리드 표시</td>
+                            <td>Cell Size, Color</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Axes</strong></td>
+                            <td>-</td>
+                            <td>좌표축 표시</td>
+                            <td>Length, Radius</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TF</strong></td>
+                            <td>tf2_msgs/TFMessage</td>
+                            <td>TF 트리 시각화</td>
+                            <td>Show Names, Show Axes</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RobotModel</strong></td>
+                            <td>std_msgs/String</td>
+                            <td>URDF 로봇 모델</td>
+                            <td>Description Topic, Alpha</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>센서 Display</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Display</th>
+                            <th>메시지 타입</th>
+                            <th>용도</th>
+                            <th>주요 설정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>LaserScan</strong></td>
+                            <td>sensor_msgs/LaserScan</td>
+                            <td>2D LiDAR 데이터</td>
+                            <td>Size, Color, Style</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PointCloud2</strong></td>
+                            <td>sensor_msgs/PointCloud2</td>
+                            <td>3D 포인트 클라우드</td>
+                            <td>Size, Color Transformer</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Image</strong></td>
+                            <td>sensor_msgs/Image</td>
+                            <td>카메라 이미지</td>
+                            <td>Topic, Transport</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Camera</strong></td>
+                            <td>sensor_msgs/Image + CameraInfo</td>
+                            <td>3D 공간에 이미지 투영</td>
+                            <td>Overlay Alpha</td>
+                        </tr>
+                        <tr>
+                            <td><strong>DepthCloud</strong></td>
+                            <td>sensor_msgs/Image (depth)</td>
+                            <td>깊이 이미지를 3D로</td>
+                            <td>Depth Topic, Color Topic</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Range</strong></td>
+                            <td>sensor_msgs/Range</td>
+                            <td>초음파/IR 센서</td>
+                            <td>Color</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Navigation Display</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Display</th>
+                            <th>메시지 타입</th>
+                            <th>용도</th>
+                            <th>주요 설정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Map</strong></td>
+                            <td>nav_msgs/OccupancyGrid</td>
+                            <td>2D 점유 격자 지도</td>
+                            <td>Color Scheme, Alpha</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Path</strong></td>
+                            <td>nav_msgs/Path</td>
+                            <td>경로 시각화</td>
+                            <td>Color, Line Width</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Odometry</strong></td>
+                            <td>nav_msgs/Odometry</td>
+                            <td>로봇 위치/속도</td>
+                            <td>Shape, Covariance</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Pose</strong></td>
+                            <td>geometry_msgs/PoseStamped</td>
+                            <td>단일 자세</td>
+                            <td>Shape, Color</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PoseArray</strong></td>
+                            <td>geometry_msgs/PoseArray</td>
+                            <td>파티클 필터 등</td>
+                            <td>Arrow Length</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="rviz-config">설정 파일 (.rviz)</h2>
+                <p>RViz 설정은 YAML 형식의 .rviz 파일로 저장/로드할 수 있습니다.</p>
+
+<pre><code># config/jetbot.rviz
+Panels:
+  - Class: rviz_common/Displays
+    Name: Displays
+  - Class: rviz_common/Selection
+    Name: Selection
+  - Class: rviz_common/Tool Properties
+    Name: Tool Properties
+  - Class: rviz_common/Views
+    Name: Views
+
+Visualization Manager:
+  Class: ""
+  Displays:
+    # 기본 그리드
+    - Class: rviz_default_plugins/Grid
+      Name: Grid
+      Enabled: true
+      Cell Size: 1
+      Color: 160; 160; 164
+      Line Style:
+        Value: Lines
+      Normal Cell Count: 0
+      Plane: XY
+      Plane Cell Count: 10
+      Reference Frame: &lt;Fixed Frame&gt;
+
+    # 로봇 모델
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Enabled: true
+      Description Topic:
+        Value: /robot_description
+      Alpha: 1
+      Visual Enabled: true
+      Collision Enabled: false
+
+    # TF 트리
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Enabled: true
+      Frame Timeout: 15
+      Frames:
+        All Enabled: true
+      Marker Scale: 0.3
+      Show Arrows: true
+      Show Axes: true
+      Show Names: true
+
+    # LiDAR 스캔
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Enabled: true
+      Topic:
+        Value: /scan
+      Size (m): 0.03
+      Style: Flat Squares
+      Color Transformer: FlatColor
+      Color: 0; 255; 0
+
+    # 지도
+    - Class: rviz_default_plugins/Map
+      Name: Map
+      Enabled: true
+      Topic:
+        Value: /map
+      Alpha: 0.7
+      Color Scheme: map
+      Draw Behind: true
+
+    # 글로벌 경로
+    - Class: rviz_default_plugins/Path
+      Name: Global Path
+      Enabled: true
+      Topic:
+        Value: /plan
+      Color: 255; 0; 0
+      Line Style: Lines
+      Line Width: 0.03
+
+    # 로컬 경로
+    - Class: rviz_default_plugins/Path
+      Name: Local Path
+      Enabled: true
+      Topic:
+        Value: /local_plan
+      Color: 0; 0; 255
+      Line Width: 0.02
+
+    # Global Costmap
+    - Class: rviz_default_plugins/Map
+      Name: Global Costmap
+      Enabled: false
+      Topic:
+        Value: /global_costmap/costmap
+      Color Scheme: costmap
+
+    # Local Costmap
+    - Class: rviz_default_plugins/Map
+      Name: Local Costmap
+      Enabled: true
+      Topic:
+        Value: /local_costmap/costmap
+      Color Scheme: costmap
+      Alpha: 0.5
+
+  Global Options:
+    Background Color: 48; 48; 48
+    Fixed Frame: map
+    Frame Rate: 30
+
+  Tools:
+    - Class: rviz_default_plugins/Interact
+    - Class: rviz_default_plugins/MoveCamera
+    - Class: rviz_default_plugins/Select
+    - Class: rviz_default_plugins/FocusCamera
+    - Class: rviz_default_plugins/Measure
+    - Class: rviz_default_plugins/SetInitialPose
+      Topic: /initialpose
+    - Class: rviz_default_plugins/SetGoal
+      Topic: /goal_pose
+
+  Views:
+    Current:
+      Class: rviz_default_plugins/Orbit
+      Distance: 5.0
+      Focal Point:
+        X: 0
+        Y: 0
+        Z: 0
+      Focal Shape Fixed Size: true
+      Focal Shape Size: 0.05
+      Invert Z Axis: false
+      Name: Current View
+      Near Clip Distance: 0.01
+      Pitch: 0.5
+      Target Frame: base_link
+      Value: Orbit (rviz_default_plugins)
+      Yaw: 0</code></pre>
+
+                <h2 id="rviz-panels">패널 구성</h2>
+
+                <h3>주요 패널</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>패널</th>
+                            <th>기능</th>
+                            <th>사용법</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Displays</strong></td>
+                            <td>Display 관리</td>
+                            <td>Add 버튼으로 Display 추가</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Views</strong></td>
+                            <td>카메라 뷰 제어</td>
+                            <td>Orbit, TopDown, FPS 등</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tool Properties</strong></td>
+                            <td>도구 설정</td>
+                            <td>2D Goal, Initial Pose 토픽</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Selection</strong></td>
+                            <td>선택된 객체 정보</td>
+                            <td>클릭한 객체 상세 정보</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Time</strong></td>
+                            <td>시간 정보</td>
+                            <td>ROS Time, Wall Time</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>View 타입</h3>
+<pre><code># Orbit: 중심점을 기준으로 회전 (기본)
+# TopDownOrtho: 위에서 내려다보기 (2D 맵용)
+# FPS: 1인칭 시점
+# ThirdPersonFollower: 로봇 따라가기
+# XYOrbit: XY 평면 기준 회전</code></pre>
+
+                <h2 id="rviz-interactive">Interactive Marker</h2>
+                <p>RViz에서 마우스로 로봇을 제어할 수 있습니다.</p>
+
+<pre><code># 2D Pose Estimate (초기 위치 설정)
+# 1. 툴바에서 "2D Pose Estimate" 클릭
+# 2. 맵에서 로봇 위치 클릭 + 드래그로 방향 지정
+# 3. /initialpose 토픽으로 발행
+
+# 2D Goal Pose (목표 지점 설정)
+# 1. 툴바에서 "2D Goal Pose" 클릭
+# 2. 맵에서 목표 위치 클릭 + 드래그로 방향 지정
+# 3. /goal_pose 토픽으로 발행 -> Nav2 자동 시작</code></pre>
+
+                <h3>커스텀 Marker 발행</h3>
+<pre><code>import rclpy
+from rclpy.node import Node
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point
+
+class MarkerPublisher(Node):
+    def __init__(self):
+        super().__init__('marker_publisher')
+        self.publisher = self.create_publisher(Marker, 'visualization_marker', 10)
+        self.timer = self.create_timer(1.0, self.publish_marker)
+
+    def publish_marker(self):
+        marker = Marker()
+        marker.header.frame_id = 'map'
+        marker.header.stamp = self.get_clock().now().to_msg()
+        marker.ns = 'my_namespace'
+        marker.id = 0
+        marker.type = Marker.SPHERE
+        marker.action = Marker.ADD
+
+        marker.pose.position.x = 1.0
+        marker.pose.position.y = 2.0
+        marker.pose.position.z = 0.0
+        marker.pose.orientation.w = 1.0
+
+        marker.scale.x = 0.2
+        marker.scale.y = 0.2
+        marker.scale.z = 0.2
+
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.color.a = 1.0
+
+        marker.lifetime.sec = 0  # 0 = 영구
+
+        self.publisher.publish(marker)</code></pre>
+
+                <!-- RQt 섹션 -->
+                <h1 id="rqt-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">RQt 도구 모음</h1>
+                <p>
+                    <strong>RQt</strong>는 Qt 기반의 플러그인 프레임워크입니다.
+                    다양한 GUI 도구를 하나의 창에서 조합하여 사용할 수 있습니다.
+                </p>
+
+<pre><code># RQt 및 플러그인 설치
+sudo apt install ros-humble-rqt ros-humble-rqt-common-plugins
+
+# RQt 실행 (빈 창)
+rqt
+
+# 플러그인 메뉴에서 도구 선택
+# Plugins -> Topics -> Topic Monitor
+# Plugins -> Visualization -> Plot
+# Plugins -> Robot Tools -> Runtime Monitor</code></pre>
+
+                <h2 id="rqt-graph">rqt_graph - 노드 그래프</h2>
+                <p>실행 중인 노드와 토픽의 연결 관계를 그래프로 시각화합니다.</p>
+
+<pre><code># 실행
+rqt_graph
+
+# 또는 RQt에서
+# Plugins -> Introspection -> Node Graph</code></pre>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                        rqt_graph                                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│    ┌──────────────┐        /cmd_vel        ┌────────────────┐   │
+│    │   teleop     │ ─────────────────────▶ │  motor_driver  │   │
+│    │   keyboard   │                        │                │   │
+│    └──────────────┘                        └───────┬────────┘   │
+│                                                    │            │
+│    ┌──────────────┐        /scan           ┌──────▼─────────┐   │
+│    │   sllidar    │ ─────────────────────▶ │   slam_toolbox │   │
+│    │    node      │                        │                │   │
+│    └──────────────┘                        └───────┬────────┘   │
+│                                                    │            │
+│                                            /map    │            │
+│                                                    ▼            │
+│                                            ┌────────────────┐   │
+│                                            │     rviz2      │   │
+│                                            └────────────────┘   │
+│                                                                  │
+│  [Nodes only] [Nodes/Topics (all)] [Nodes/Topics (active)]      │
+│  [ ] Hide Debug  [ ] Group by Namespace  [Refresh]              │
+└─────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h2 id="rqt-plot">rqt_plot - 실시간 데이터 플롯</h2>
+                <p>토픽 데이터를 실시간 그래프로 시각화합니다.</p>
+
+<pre><code># 실행
+rqt_plot
+
+# 특정 토픽 필드 지정
+rqt_plot /cmd_vel/linear/x /cmd_vel/angular/z
+
+# IMU 데이터
+rqt_plot /imu/linear_acceleration/x:y:z
+
+# 오도메트리 위치
+rqt_plot /odom/pose/pose/position/x:y</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>팁:</strong> 콜론(:)으로 여러 필드를 구분하여 같은 그래프에 표시할 수 있습니다.
+                </div>
+
+                <h2 id="rqt-image">rqt_image_view - 이미지 뷰어</h2>
+<pre><code># 실행
+rqt_image_view
+
+# 특정 토픽 지정
+rqt_image_view /camera/image_raw
+
+# 압축 이미지
+rqt_image_view /camera/image_raw/compressed</code></pre>
+
+                <h2 id="rqt-console">rqt_console - 로그 뷰어</h2>
+                <p>ROS 로그 메시지를 필터링하여 확인합니다.</p>
+
+<pre><code># 실행
+rqt_console
+
+# 필터 설정:
+# - Severity: Debug, Info, Warn, Error, Fatal
+# - Node: 특정 노드만 표시
+# - Message: 키워드 필터링</code></pre>
+
+                <h2 id="rqt-tf">rqt_tf_tree - TF 트리 시각화</h2>
+<pre><code># 실행
+rqt_tf_tree
+
+# TF 트리 구조 예시:
+#
+#        map
+#         │
+#        odom
+#         │
+#     base_link
+#    /    |    \
+# left  right  laser
+# wheel wheel  frame</code></pre>
+
+                <h2 id="rqt-reconfigure">rqt_reconfigure - 동적 파라미터 조정</h2>
+                <p>실행 중인 노드의 파라미터를 실시간으로 변경합니다.</p>
+
+<pre><code># 설치
+sudo apt install ros-humble-rqt-reconfigure
+
+# 실행
+rqt_reconfigure
+
+# 또는
+ros2 run rqt_reconfigure rqt_reconfigure</code></pre>
+
+                <!-- Gazebo 섹션 -->
+                <h1 id="gazebo-intro" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">Gazebo 시뮬레이션</h1>
+                <p>
+                    <strong>Gazebo</strong>는 물리 엔진 기반의 3D 로봇 시뮬레이터입니다.
+                    실제 로봇 없이 알고리즘을 테스트하고 검증할 수 있습니다.
+                </p>
+
+                <div class="alert alert-warning">
+                    <strong>Gazebo 버전:</strong>
+                    <ul>
+                        <li><strong>Gazebo Classic (11)</strong>: ROS 1/2 호환, 레거시</li>
+                        <li><strong>Ignition Gazebo (Fortress)</strong>: 차세대, ROS 2 Humble 권장</li>
+                        <li><strong>Gazebo Sim (Harmonic)</strong>: 최신 버전</li>
+                    </ul>
+                </div>
+
+                <h2 id="gazebo-install">설치</h2>
+<pre><code># Gazebo Classic + ROS 2 연동
+sudo apt install ros-humble-gazebo-ros-pkgs
+
+# Ignition Gazebo + ROS 2 연동
+sudo apt install ros-humble-ros-gz
+
+# Gazebo 단독 실행
+gazebo --verbose
+
+# ROS 2 연동 실행
+ros2 launch gazebo_ros gazebo.launch.py
+
+# 특정 world 파일로 실행
+ros2 launch gazebo_ros gazebo.launch.py world:=~/worlds/my_world.world</code></pre>
+
+                <h2 id="gazebo-world">World 파일</h2>
+                <p>시뮬레이션 환경을 정의하는 SDF(Simulation Description Format) 파일입니다.</p>
+
+<pre><code>&lt;?xml version="1.0"?&gt;
+&lt;sdf version="1.6"&gt;
+  &lt;world name="jetbot_world"&gt;
+
+    &lt;!-- 조명 --&gt;
+    &lt;include&gt;
+      &lt;uri&gt;model://sun&lt;/uri&gt;
+    &lt;/include&gt;
+
+    &lt;!-- 바닥 --&gt;
+    &lt;include&gt;
+      &lt;uri&gt;model://ground_plane&lt;/uri&gt;
+    &lt;/include&gt;
+
+    &lt;!-- 벽 --&gt;
+    &lt;model name="wall_1"&gt;
+      &lt;static&gt;true&lt;/static&gt;
+      &lt;pose&gt;5 0 0.5 0 0 0&lt;/pose&gt;
+      &lt;link name="link"&gt;
+        &lt;collision name="collision"&gt;
+          &lt;geometry&gt;
+            &lt;box&gt;&lt;size&gt;0.1 10 1&lt;/size&gt;&lt;/box&gt;
+          &lt;/geometry&gt;
+        &lt;/collision&gt;
+        &lt;visual name="visual"&gt;
+          &lt;geometry&gt;
+            &lt;box&gt;&lt;size&gt;0.1 10 1&lt;/size&gt;&lt;/box&gt;
+          &lt;/geometry&gt;
+          &lt;material&gt;
+            &lt;ambient&gt;0.5 0.5 0.5 1&lt;/ambient&gt;
+          &lt;/material&gt;
+        &lt;/visual&gt;
+      &lt;/link&gt;
+    &lt;/model&gt;
+
+    &lt;!-- 물리 엔진 설정 --&gt;
+    &lt;physics type="ode"&gt;
+      &lt;real_time_update_rate&gt;1000&lt;/real_time_update_rate&gt;
+      &lt;max_step_size&gt;0.001&lt;/max_step_size&gt;
+    &lt;/physics&gt;
+
+  &lt;/world&gt;
+&lt;/sdf&gt;</code></pre>
+
+                <h2 id="gazebo-robot">Gazebo 로봇 모델</h2>
+                <p>URDF에 Gazebo 태그를 추가하여 시뮬레이션 속성을 정의합니다.</p>
+
+<pre><code>&lt;!-- urdf/jetbot_gazebo.urdf.xacro --&gt;
+&lt;robot name="jetbot" xmlns:xacro="http://www.ros.org/wiki/xacro"&gt;
+
+  &lt;!-- 기본 URDF 포함 --&gt;
+  &lt;xacro:include filename="$(find jetbot_description)/urdf/jetbot.urdf.xacro"/&gt;
+
+  &lt;!-- Gazebo 마찰 계수 --&gt;
+  &lt;gazebo reference="left_wheel"&gt;
+    &lt;mu1&gt;1.0&lt;/mu1&gt;
+    &lt;mu2&gt;1.0&lt;/mu2&gt;
+    &lt;kp&gt;500000.0&lt;/kp&gt;
+    &lt;kd&gt;10.0&lt;/kd&gt;
+    &lt;material&gt;Gazebo/Black&lt;/material&gt;
+  &lt;/gazebo&gt;
+
+  &lt;gazebo reference="right_wheel"&gt;
+    &lt;mu1&gt;1.0&lt;/mu1&gt;
+    &lt;mu2&gt;1.0&lt;/mu2&gt;
+    &lt;kp&gt;500000.0&lt;/kp&gt;
+    &lt;kd&gt;10.0&lt;/kd&gt;
+    &lt;material&gt;Gazebo/Black&lt;/material&gt;
+  &lt;/gazebo&gt;
+
+  &lt;gazebo reference="caster_ball"&gt;
+    &lt;mu1&gt;0.0&lt;/mu1&gt;
+    &lt;mu2&gt;0.0&lt;/mu2&gt;
+    &lt;material&gt;Gazebo/Grey&lt;/material&gt;
+  &lt;/gazebo&gt;
+
+  &lt;gazebo reference="base_link"&gt;
+    &lt;material&gt;Gazebo/DarkGrey&lt;/material&gt;
+  &lt;/gazebo&gt;
+
+&lt;/robot&gt;</code></pre>
+
+                <h2 id="gazebo-plugins">Gazebo 플러그인</h2>
+
+                <h3>Differential Drive 플러그인</h3>
+<pre><code>&lt;gazebo&gt;
+  &lt;plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so"&gt;
+    &lt;ros&gt;
+      &lt;namespace&gt;/jetbot&lt;/namespace&gt;
+      &lt;remapping&gt;cmd_vel:=cmd_vel&lt;/remapping&gt;
+      &lt;remapping&gt;odom:=odom&lt;/remapping&gt;
+    &lt;/ros&gt;
+
+    &lt;!-- 바퀴 조인트 --&gt;
+    &lt;left_joint&gt;left_wheel_joint&lt;/left_joint&gt;
+    &lt;right_joint&gt;right_wheel_joint&lt;/right_joint&gt;
+
+    &lt;!-- 바퀴 파라미터 --&gt;
+    &lt;wheel_separation&gt;0.15&lt;/wheel_separation&gt;
+    &lt;wheel_diameter&gt;0.066&lt;/wheel_diameter&gt;
+
+    &lt;!-- 속도/가속도 제한 --&gt;
+    &lt;max_wheel_torque&gt;20&lt;/max_wheel_torque&gt;
+    &lt;max_wheel_acceleration&gt;1.0&lt;/max_wheel_acceleration&gt;
+
+    &lt;!-- 토픽 --&gt;
+    &lt;command_topic&gt;cmd_vel&lt;/command_topic&gt;
+    &lt;odometry_topic&gt;odom&lt;/odometry_topic&gt;
+    &lt;odometry_frame&gt;odom&lt;/odometry_frame&gt;
+    &lt;robot_base_frame&gt;base_link&lt;/robot_base_frame&gt;
+
+    &lt;!-- 발행 설정 --&gt;
+    &lt;publish_odom&gt;true&lt;/publish_odom&gt;
+    &lt;publish_odom_tf&gt;true&lt;/publish_odom_tf&gt;
+    &lt;publish_wheel_tf&gt;false&lt;/publish_wheel_tf&gt;
+
+    &lt;odometry_source&gt;world&lt;/odometry_source&gt;
+    &lt;update_rate&gt;100&lt;/update_rate&gt;
+  &lt;/plugin&gt;
+&lt;/gazebo&gt;</code></pre>
+
+                <h2 id="gazebo-sensors">센서 시뮬레이션</h2>
+
+                <h3>LiDAR 플러그인</h3>
+<pre><code>&lt;gazebo reference="laser_frame"&gt;
+  &lt;sensor type="ray" name="lidar"&gt;
+    &lt;pose&gt;0 0 0 0 0 0&lt;/pose&gt;
+    &lt;visualize&gt;true&lt;/visualize&gt;
+    &lt;update_rate&gt;10&lt;/update_rate&gt;
+
+    &lt;ray&gt;
+      &lt;scan&gt;
+        &lt;horizontal&gt;
+          &lt;samples&gt;360&lt;/samples&gt;
+          &lt;resolution&gt;1&lt;/resolution&gt;
+          &lt;min_angle&gt;-3.14159&lt;/min_angle&gt;
+          &lt;max_angle&gt;3.14159&lt;/max_angle&gt;
+        &lt;/horizontal&gt;
+      &lt;/scan&gt;
+      &lt;range&gt;
+        &lt;min&gt;0.12&lt;/min&gt;
+        &lt;max&gt;12.0&lt;/max&gt;
+        &lt;resolution&gt;0.01&lt;/resolution&gt;
+      &lt;/range&gt;
+      &lt;noise&gt;
+        &lt;type&gt;gaussian&lt;/type&gt;
+        &lt;mean&gt;0.0&lt;/mean&gt;
+        &lt;stddev&gt;0.01&lt;/stddev&gt;
+      &lt;/noise&gt;
+    &lt;/ray&gt;
+
+    &lt;plugin name="scan" filename="libgazebo_ros_ray_sensor.so"&gt;
+      &lt;ros&gt;
+        &lt;remapping&gt;~/out:=scan&lt;/remapping&gt;
+      &lt;/ros&gt;
+      &lt;output_type&gt;sensor_msgs/LaserScan&lt;/output_type&gt;
+      &lt;frame_name&gt;laser_frame&lt;/frame_name&gt;
+    &lt;/plugin&gt;
+  &lt;/sensor&gt;
+&lt;/gazebo&gt;</code></pre>
+
+                <h3>카메라 플러그인</h3>
+<pre><code>&lt;gazebo reference="camera_link"&gt;
+  &lt;sensor type="camera" name="camera"&gt;
+    &lt;update_rate&gt;30.0&lt;/update_rate&gt;
+    &lt;visualize&gt;true&lt;/visualize&gt;
+
+    &lt;camera name="head"&gt;
+      &lt;horizontal_fov&gt;1.3962634&lt;/horizontal_fov&gt;
+      &lt;image&gt;
+        &lt;width&gt;640&lt;/width&gt;
+        &lt;height&gt;480&lt;/height&gt;
+        &lt;format&gt;R8G8B8&lt;/format&gt;
+      &lt;/image&gt;
+      &lt;clip&gt;
+        &lt;near&gt;0.02&lt;/near&gt;
+        &lt;far&gt;300&lt;/far&gt;
+      &lt;/clip&gt;
+      &lt;noise&gt;
+        &lt;type&gt;gaussian&lt;/type&gt;
+        &lt;mean&gt;0.0&lt;/mean&gt;
+        &lt;stddev&gt;0.007&lt;/stddev&gt;
+      &lt;/noise&gt;
+    &lt;/camera&gt;
+
+    &lt;plugin name="camera_controller" filename="libgazebo_ros_camera.so"&gt;
+      &lt;ros&gt;
+        &lt;remapping&gt;image_raw:=image_raw&lt;/remapping&gt;
+        &lt;remapping&gt;camera_info:=camera_info&lt;/remapping&gt;
+      &lt;/ros&gt;
+      &lt;frame_name&gt;camera_link&lt;/frame_name&gt;
+    &lt;/plugin&gt;
+  &lt;/sensor&gt;
+&lt;/gazebo&gt;</code></pre>
+
+                <!-- 기타 도구 -->
+                <h1 id="foxglove" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">기타 시각화 도구</h1>
+
+                <h2>Foxglove Studio</h2>
+                <p>
+                    <strong>Foxglove Studio</strong>는 모던한 웹 기반 로봇 시각화 도구입니다.
+                    RViz보다 사용자 친화적이며 원격 모니터링에 적합합니다.
+                </p>
+
+<pre><code># 설치 (AppImage)
+wget https://github.com/foxglove/studio/releases/latest/download/foxglove-studio-*.AppImage
+chmod +x foxglove-studio-*.AppImage
+./foxglove-studio-*.AppImage
+
+# 또는 웹 버전
+# https://studio.foxglove.dev
+
+# ROS 2 연결 (rosbridge 필요)
+sudo apt install ros-humble-rosbridge-suite
+ros2 launch rosbridge_server rosbridge_websocket_launch.xml
+
+# Foxglove에서: Open Connection -> Rosbridge -> ws://localhost:9090</code></pre>
+
+                <h2 id="plotjuggler">PlotJuggler</h2>
+                <p>
+                    <strong>PlotJuggler</strong>는 고급 데이터 시각화 도구입니다.
+                    rqt_plot보다 더 강력한 기능을 제공합니다.
+                </p>
+
+<pre><code># 설치
+sudo apt install ros-humble-plotjuggler-ros
+
+# 실행
+ros2 run plotjuggler plotjuggler
+
+# 기능:
+# - 여러 토픽 동시 플롯
+# - 데이터 변환 (미분, 적분 등)
+# - CSV 내보내기
+# - ROS bag 재생 및 분석</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>요약:</strong>
+                    <ul>
+                        <li><strong>RViz 2</strong>: 3D 시각화의 표준, 필수 도구</li>
+                        <li><strong>RQt</strong>: 빠른 디버깅 및 모니터링</li>
+                        <li><strong>Gazebo</strong>: 시뮬레이션 및 알고리즘 검증</li>
+                        <li><strong>Foxglove</strong>: 원격 모니터링, 팀 협업</li>
+                        <li><strong>PlotJuggler</strong>: 고급 데이터 분석</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="ros-advanced.html" class="btn btn-secondary">&larr; ROS 심화</a>
+                        <a href="slam.html" class="btn btn-primary" style="margin-left: 1rem;">다음: SLAM &rarr;</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>

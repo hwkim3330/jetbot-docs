@@ -43,7 +43,10 @@
 | [Hardware](https://hwkim3330.github.io/jetbot-docs/hardware.html) | 전원 설계, GPIO, I2C, 카메라 인터페이스, BOM |
 | [Software](https://hwkim3330.github.io/jetbot-docs/software.html) | JetPack 6 설치, ROS 2 Humble 환경 구축 |
 | [ROS2](https://hwkim3330.github.io/jetbot-docs/ros2.html) | 모터 드라이버, 센서 통합, SLAM, Nav2 |
-| [ROS 심화](https://hwkim3330.github.io/jetbot-docs/ros-advanced.html) | DDS, QoS, Lifecycle, RViz, SLAM, Navigation 심화 |
+| [ROS 심화](https://hwkim3330.github.io/jetbot-docs/ros-advanced.html) | DDS, QoS, Lifecycle, Executors, 콜백 그룹 |
+| [시각화 도구](https://hwkim3330.github.io/jetbot-docs/visualization.html) | RViz 2, RQt, Gazebo 시뮬레이션 |
+| [SLAM](https://hwkim3330.github.io/jetbot-docs/slam.html) | SLAM Toolbox, Cartographer, 지도 관리 |
+| [Navigation](https://hwkim3330.github.io/jetbot-docs/navigation.html) | Nav2, Costmap, Path Planning, Controllers |
 | [Reference](https://hwkim3330.github.io/jetbot-docs/reference.html) | 트러블슈팅, 핀맵, 명령어 레퍼런스 |
 | [Web Tools](https://hwkim3330.github.io/jetbot-docs/web-tools.html) | 웹 기반 로봇 제어 및 모니터링 |
 
@@ -144,7 +147,10 @@ jetbot-docs/
 ├── hardware.html       # 하드웨어 가이드
 ├── software.html       # 소프트웨어 설치
 ├── ros2.html           # ROS2 구현
-├── ros-advanced.html   # ROS 심화과정
+├── ros-advanced.html   # ROS 심화 (핵심 개념)
+├── visualization.html  # 시각화 도구 (RViz, RQt, Gazebo)
+├── slam.html           # SLAM (Toolbox, Cartographer)
+├── navigation.html     # Navigation (Nav2)
 ├── reference.html      # 참고자료
 ├── web-tools.html      # 웹 도구
 ├── css/
