@@ -1,0 +1,1784 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROS 심화과정 - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li><a href="ros-advanced.html" class="active">ROS 심화</a></li>
+                <li><a href="web-tools.html">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>ROS 2 핵심 개념</h4>
+                <ul>
+                    <li><a href="#ros2-architecture">아키텍처 개요</a></li>
+                    <li><a href="#dds">DDS 미들웨어</a></li>
+                    <li><a href="#qos">QoS 프로파일</a></li>
+                </ul>
+                <h4>통신 메커니즘</h4>
+                <ul>
+                    <li><a href="#topics">토픽 (Topics)</a></li>
+                    <li><a href="#services">서비스 (Services)</a></li>
+                    <li><a href="#actions">액션 (Actions)</a></li>
+                    <li><a href="#parameters">파라미터</a></li>
+                </ul>
+                <h4>고급 기능</h4>
+                <ul>
+                    <li><a href="#lifecycle">Lifecycle 노드</a></li>
+                    <li><a href="#composition">노드 컴포지션</a></li>
+                    <li><a href="#executors">Executors</a></li>
+                    <li><a href="#callbacks">콜백 그룹</a></li>
+                </ul>
+                <h4>실시간 처리</h4>
+                <ul>
+                    <li><a href="#realtime">실시간 ROS 2</a></li>
+                    <li><a href="#intra-process">Intra-Process</a></li>
+                </ul>
+                <h4>시각화 도구</h4>
+                <ul>
+                    <li><a href="#rviz">RViz 2</a></li>
+                    <li><a href="#rqt">RQt 도구</a></li>
+                    <li><a href="#gazebo">Gazebo 시뮬레이션</a></li>
+                </ul>
+                <h4>SLAM & Navigation</h4>
+                <ul>
+                    <li><a href="#slam-theory">SLAM 이론</a></li>
+                    <li><a href="#slam-toolbox">SLAM Toolbox</a></li>
+                    <li><a href="#cartographer">Cartographer</a></li>
+                    <li><a href="#nav2-deep">Nav2 심화</a></li>
+                    <li><a href="#costmap">Costmap 설정</a></li>
+                    <li><a href="#path-planning">경로 계획</a></li>
+                </ul>
+                <h4>개발 도구</h4>
+                <ul>
+                    <li><a href="#colcon">Colcon 빌드</a></li>
+                    <li><a href="#launch">Launch 시스템</a></li>
+                    <li><a href="#debugging">디버깅 기법</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>ROS 심화과정</span>
+                </div>
+
+                <h1 id="ros2-architecture">ROS 2 아키텍처 심층 분석</h1>
+                <p>
+                    ROS 2는 ROS 1의 한계를 극복하기 위해 완전히 새로 설계되었습니다.
+                    산업용 표준인 <strong>DDS (Data Distribution Service)</strong>를 기반으로 하여
+                    실시간성, 보안, 멀티 로봇 지원을 제공합니다.
+                </p>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         ROS 2 ARCHITECTURE                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                     APPLICATION LAYER                            │   │
+│   │   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐   │   │
+│   │   │  Nodes   │  │  Topics  │  │ Services │  │   Actions    │   │   │
+│   │   └──────────┘  └──────────┘  └──────────┘  └──────────────┘   │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                       RCL (ROS Client Library)                   │   │
+│   │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐   │   │
+│   │   │  rclpy  │  │  rclcpp │  │  rclrs  │  │  rcljava, etc.  │   │   │
+│   │   │ Python  │  │   C++   │  │  Rust   │  │  Other langs    │   │   │
+│   │   └─────────┘  └─────────┘  └─────────┘  └─────────────────┘   │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                          RMW (ROS Middleware)                    │   │
+│   │   ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐     │   │
+│   │   │ rmw_fastrtps │  │ rmw_cyclone  │  │  rmw_connextdds  │     │   │
+│   │   │  (default)   │  │    dds       │  │    (RTI)         │     │   │
+│   │   └──────────────┘  └──────────────┘  └──────────────────┘     │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                   │                                      │
+│   ┌─────────────────────────────────────────────────────────────────┐   │
+│   │                    DDS (Data Distribution Service)               │   │
+│   │           OMG Standard | RTPS Protocol | UDP/TCP Transport       │   │
+│   └─────────────────────────────────────────────────────────────────┘   │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h3>ROS 1 vs ROS 2 비교</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>항목</th>
+                            <th>ROS 1</th>
+                            <th>ROS 2</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>미들웨어</td>
+                            <td>커스텀 (TCPROS/UDPROS)</td>
+                            <td>DDS (산업 표준)</td>
+                        </tr>
+                        <tr>
+                            <td>마스터 노드</td>
+                            <td>필수 (roscore)</td>
+                            <td>불필요 (분산 탐색)</td>
+                        </tr>
+                        <tr>
+                            <td>실시간 지원</td>
+                            <td>제한적</td>
+                            <td>네이티브 지원</td>
+                        </tr>
+                        <tr>
+                            <td>보안</td>
+                            <td>없음</td>
+                            <td>DDS-Security</td>
+                        </tr>
+                        <tr>
+                            <td>멀티 로봇</td>
+                            <td>복잡</td>
+                            <td>Domain ID로 간단</td>
+                        </tr>
+                        <tr>
+                            <td>플랫폼</td>
+                            <td>Linux 중심</td>
+                            <td>Windows, macOS, RTOS</td>
+                        </tr>
+                        <tr>
+                            <td>빌드 시스템</td>
+                            <td>catkin</td>
+                            <td>colcon + ament</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="dds">DDS 미들웨어 이해</h2>
+                <p>
+                    DDS(Data Distribution Service)는 OMG(Object Management Group)에서 정의한
+                    데이터 중심 퍼블리시-서브스크라이브 표준입니다.
+                </p>
+
+                <h3>DDS 핵심 개념</h3>
+                <div class="diagram">
+┌──────────────────────────────────────────────────────────────────┐
+│                     DDS DOMAIN (Domain ID: 0)                     │
+├──────────────────────────────────────────────────────────────────┤
+│                                                                   │
+│   ┌────────────────────┐          ┌────────────────────┐        │
+│   │   DomainParticipant │          │   DomainParticipant │        │
+│   │     (Node A)        │          │     (Node B)        │        │
+│   │                     │          │                     │        │
+│   │  ┌──────────────┐  │   RTPS   │  ┌──────────────┐  │        │
+│   │  │  DataWriter  │──┼──────────┼─▶│  DataReader  │  │        │
+│   │  │  (Publisher) │  │  UDP/TCP │  │ (Subscriber) │  │        │
+│   │  └──────────────┘  │          │  └──────────────┘  │        │
+│   │                     │          │                     │        │
+│   │  Topic: /cmd_vel   │          │  Topic: /cmd_vel   │        │
+│   │  Type: Twist       │          │  Type: Twist       │        │
+│   │  QoS: Reliable     │          │  QoS: Reliable     │        │
+│   └────────────────────┘          └────────────────────┘        │
+│                                                                   │
+└──────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h3>RMW 구현체 선택</h3>
+<pre><code># 현재 RMW 확인
+echo $RMW_IMPLEMENTATION
+
+# Fast DDS (기본값)
+export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+
+# Cyclone DDS (경량, 임베디드 적합)
+sudo apt install ros-humble-rmw-cyclonedds-cpp
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# 영구 설정
+echo "export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp" >> ~/.bashrc</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>JetBot 권장:</strong> Cyclone DDS는 메모리 사용량이 적어
+                    Jetson과 같은 임베디드 시스템에 적합합니다.
+                </div>
+
+                <h3>멀티 로봇 환경: Domain ID</h3>
+<pre><code># 로봇 1 (Domain 0)
+export ROS_DOMAIN_ID=0
+ros2 run jetbot_ros2 motor_driver
+
+# 로봇 2 (Domain 1) - 완전히 분리된 네트워크
+export ROS_DOMAIN_ID=1
+ros2 run jetbot_ros2 motor_driver
+
+# 같은 Domain의 모든 노드 확인
+ros2 node list</code></pre>
+
+                <h2 id="qos">QoS (Quality of Service) 프로파일</h2>
+                <p>
+                    QoS는 통신의 신뢰성, 지연시간, 리소스 사용량을 제어합니다.
+                    센서 데이터와 제어 명령에 서로 다른 QoS를 적용해야 합니다.
+                </p>
+
+                <h3>QoS 정책 종류</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>정책</th>
+                            <th>옵션</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Reliability</strong></td>
+                            <td>RELIABLE / BEST_EFFORT</td>
+                            <td>메시지 전달 보장 여부</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Durability</strong></td>
+                            <td>VOLATILE / TRANSIENT_LOCAL</td>
+                            <td>늦게 참여한 구독자에게 이전 데이터 제공</td>
+                        </tr>
+                        <tr>
+                            <td><strong>History</strong></td>
+                            <td>KEEP_LAST(n) / KEEP_ALL</td>
+                            <td>보관할 메시지 수</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Depth</strong></td>
+                            <td>1, 10, 100...</td>
+                            <td>큐 크기</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Deadline</strong></td>
+                            <td>Duration</td>
+                            <td>메시지 수신 기한</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Lifespan</strong></td>
+                            <td>Duration</td>
+                            <td>메시지 유효 기간</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Liveliness</strong></td>
+                            <td>AUTOMATIC / MANUAL</td>
+                            <td>노드 생존 확인 방식</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>QoS 프로파일 사용</h3>
+<pre><code>import rclpy
+from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy, HistoryPolicy, DurabilityPolicy
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
+
+class QoSExampleNode(Node):
+    def __init__(self):
+        super().__init__('qos_example')
+
+        # 센서 데이터용 QoS (속도 우선, 손실 허용)
+        sensor_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=5,
+            durability=DurabilityPolicy.VOLATILE
+        )
+
+        # 제어 명령용 QoS (신뢰성 우선)
+        control_qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+            durability=DurabilityPolicy.VOLATILE
+        )
+
+        # LiDAR 구독 (Best Effort)
+        self.scan_sub = self.create_subscription(
+            LaserScan,
+            '/scan',
+            self.scan_callback,
+            sensor_qos
+        )
+
+        # 속도 명령 발행 (Reliable)
+        self.cmd_pub = self.create_publisher(
+            Twist,
+            '/cmd_vel',
+            control_qos
+        )
+
+    def scan_callback(self, msg):
+        # 센서 데이터 처리
+        pass</code></pre>
+
+                <h3>프리셋 QoS 프로파일</h3>
+<pre><code>from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
+
+# 센서 데이터 (Best Effort, Depth=5)
+self.create_subscription(LaserScan, '/scan', callback, qos_profile_sensor_data)
+
+# 일반 통신 (Reliable, Depth=10)
+self.create_subscription(String, '/status', callback, qos_profile_system_default)</code></pre>
+
+                <h2 id="topics">토픽 (Topics) 심화</h2>
+                <p>토픽은 비동기 퍼블리시-서브스크라이브 패턴입니다. 1:N, N:1, N:N 통신이 가능합니다.</p>
+
+                <div class="diagram">
+Publisher ──────▶ Topic ──────▶ Subscriber
+   │               │               │
+   │               │               ▼
+   │               │          Subscriber
+   │               │               │
+   ▼               │               ▼
+Publisher ────────┘          Subscriber
+
+      Many-to-Many Communication
+                </div>
+
+<pre><code># 토픽 목록
+ros2 topic list
+
+# 토픽 정보 (타입, QoS, 발행자/구독자 수)
+ros2 topic info /cmd_vel -v
+
+# 토픽 모니터링
+ros2 topic echo /scan
+
+# 토픽 발행률
+ros2 topic hz /scan
+
+# 토픽 지연시간
+ros2 topic delay /scan
+
+# 대역폭 측정
+ros2 topic bw /image_raw</code></pre>
+
+                <h2 id="services">서비스 (Services) 심화</h2>
+                <p>서비스는 동기 요청-응답 패턴입니다. 1:1 통신으로 결과를 기다립니다.</p>
+
+                <div class="diagram">
+Client ──── Request ────▶ Server
+   │                        │
+   │                   Processing
+   │                        │
+   └◀──── Response ────────┘
+
+    Synchronous Request-Response
+                </div>
+
+                <h3>서비스 정의 (.srv)</h3>
+<pre><code># srv/SetSpeed.srv
+float32 linear_speed
+float32 angular_speed
+---
+bool success
+string message</code></pre>
+
+                <h3>서비스 서버 구현</h3>
+<pre><code>from jetbot_interfaces.srv import SetSpeed
+
+class SpeedServiceNode(Node):
+    def __init__(self):
+        super().__init__('speed_service')
+        self.srv = self.create_service(
+            SetSpeed,
+            'set_speed',
+            self.set_speed_callback
+        )
+
+    def set_speed_callback(self, request, response):
+        self.get_logger().info(
+            f'Setting speed: linear={request.linear_speed}, '
+            f'angular={request.angular_speed}'
+        )
+
+        # 속도 설정 로직
+        try:
+            self.apply_speed(request.linear_speed, request.angular_speed)
+            response.success = True
+            response.message = 'Speed set successfully'
+        except Exception as e:
+            response.success = False
+            response.message = str(e)
+
+        return response</code></pre>
+
+                <h3>서비스 클라이언트</h3>
+<pre><code>class SpeedClientNode(Node):
+    def __init__(self):
+        super().__init__('speed_client')
+        self.cli = self.create_client(SetSpeed, 'set_speed')
+
+        # 서비스 대기
+        while not self.cli.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('Waiting for service...')
+
+    def send_request(self, linear, angular):
+        request = SetSpeed.Request()
+        request.linear_speed = linear
+        request.angular_speed = angular
+
+        # 비동기 호출
+        future = self.cli.call_async(request)
+        future.add_done_callback(self.response_callback)
+
+    def response_callback(self, future):
+        response = future.result()
+        self.get_logger().info(f'Result: {response.success}, {response.message}')</code></pre>
+
+                <h2 id="actions">액션 (Actions) 심화</h2>
+                <p>
+                    액션은 장시간 실행 작업을 위한 패턴입니다.
+                    피드백과 취소 기능을 제공합니다.
+                </p>
+
+                <div class="diagram">
+┌──────────────────────────────────────────────────────────────┐
+│                        ACTION                                 │
+│                                                               │
+│   Client ──── Goal ────────▶ Server                          │
+│      │                          │                            │
+│      │◀──── Goal Response ──────┤                            │
+│      │                          │                            │
+│      │◀──── Feedback ───────────┤ (periodic)                 │
+│      │◀──── Feedback ───────────┤                            │
+│      │                          │                            │
+│      │──── Cancel Request ──────▶ (optional)                 │
+│      │                          │                            │
+│      │◀──── Result ─────────────┘                            │
+│                                                               │
+│   Long-running task with feedback and cancellation           │
+└──────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h3>액션 정의 (.action)</h3>
+<pre><code># action/Navigate.action
+
+# Goal
+geometry_msgs/PoseStamped target_pose
+---
+# Result
+bool success
+float32 total_distance
+float32 total_time
+---
+# Feedback
+geometry_msgs/PoseStamped current_pose
+float32 distance_remaining
+float32 estimated_time_remaining</code></pre>
+
+                <h3>액션 서버</h3>
+<pre><code>from rclpy.action import ActionServer, CancelResponse, GoalResponse
+from jetbot_interfaces.action import Navigate
+
+class NavigateActionServer(Node):
+    def __init__(self):
+        super().__init__('navigate_server')
+        self._action_server = ActionServer(
+            self,
+            Navigate,
+            'navigate',
+            execute_callback=self.execute_callback,
+            goal_callback=self.goal_callback,
+            cancel_callback=self.cancel_callback
+        )
+
+    def goal_callback(self, goal_request):
+        """Goal 수락/거부 결정"""
+        self.get_logger().info('Received goal request')
+        return GoalResponse.ACCEPT
+
+    def cancel_callback(self, goal_handle):
+        """취소 요청 처리"""
+        self.get_logger().info('Received cancel request')
+        return CancelResponse.ACCEPT
+
+    async def execute_callback(self, goal_handle):
+        """실제 작업 수행"""
+        self.get_logger().info('Executing goal...')
+
+        feedback_msg = Navigate.Feedback()
+        result = Navigate.Result()
+
+        # 주기적으로 피드백 전송
+        for i in range(100):
+            if goal_handle.is_cancel_requested:
+                goal_handle.canceled()
+                result.success = False
+                return result
+
+            feedback_msg.distance_remaining = 100.0 - i
+            goal_handle.publish_feedback(feedback_msg)
+            await asyncio.sleep(0.1)
+
+        goal_handle.succeed()
+        result.success = True
+        result.total_distance = 10.0
+        return result</code></pre>
+
+                <h2 id="parameters">파라미터 시스템</h2>
+                <p>노드의 설정값을 런타임에 동적으로 변경할 수 있습니다.</p>
+
+<pre><code>class ParameterNode(Node):
+    def __init__(self):
+        super().__init__('param_node')
+
+        # 파라미터 선언
+        self.declare_parameter('max_speed', 1.0)
+        self.declare_parameter('wheelbase', 0.15)
+        self.declare_parameter('control_frequency', 50)
+
+        # 파라미터 콜백 등록
+        self.add_on_set_parameters_callback(self.parameter_callback)
+
+    def parameter_callback(self, params):
+        """파라미터 변경 시 호출"""
+        for param in params:
+            self.get_logger().info(f'Parameter {param.name} changed to {param.value}')
+
+            if param.name == 'max_speed':
+                if param.value < 0 or param.value > 2.0:
+                    return SetParametersResult(
+                        successful=False,
+                        reason='max_speed must be between 0 and 2.0'
+                    )
+
+        return SetParametersResult(successful=True)</code></pre>
+
+<pre><code># CLI에서 파라미터 조작
+ros2 param list /motor_driver
+ros2 param get /motor_driver max_speed
+ros2 param set /motor_driver max_speed 0.5
+
+# YAML 파일로 파라미터 로드
+ros2 run jetbot_ros2 motor_driver --ros-args \
+    --params-file config/motor_params.yaml</code></pre>
+
+                <h2 id="lifecycle">Lifecycle 노드</h2>
+                <p>
+                    Lifecycle 노드는 상태 머신을 제공하여 노드의 시작/종료를
+                    예측 가능하게 관리합니다. 산업용 로봇에서 필수적입니다.
+                </p>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────┐
+│                    LIFECYCLE STATE MACHINE                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│    ┌─────────────┐    configure()    ┌─────────────┐            │
+│    │ Unconfigured│──────────────────▶│  Inactive   │            │
+│    └─────────────┘                   └──────┬──────┘            │
+│           ▲                                 │                    │
+│           │ cleanup()                       │ activate()         │
+│           │                                 ▼                    │
+│    ┌──────┴──────┐    deactivate()   ┌─────────────┐            │
+│    │  Inactive   │◀──────────────────│   Active    │            │
+│    └─────────────┘                   └─────────────┘            │
+│                                                                  │
+│    Any State ─────── shutdown() ─────▶ Finalized                │
+│                                                                  │
+│    Any State ─────── error ──────────▶ Error Handling           │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                </div>
+
+<pre><code>from rclpy.lifecycle import Node as LifecycleNode
+from rclpy.lifecycle import State, TransitionCallbackReturn
+
+class MotorDriverLifecycle(LifecycleNode):
+    def __init__(self):
+        super().__init__('motor_driver_lifecycle')
+        self.kit = None
+
+    def on_configure(self, state: State) -> TransitionCallbackReturn:
+        """하드웨어 초기화"""
+        self.get_logger().info('Configuring...')
+        try:
+            self.kit = ServoKit(channels=16)
+            return TransitionCallbackReturn.SUCCESS
+        except Exception as e:
+            self.get_logger().error(f'Configuration failed: {e}')
+            return TransitionCallbackReturn.FAILURE
+
+    def on_activate(self, state: State) -> TransitionCallbackReturn:
+        """구독자/발행자 활성화"""
+        self.get_logger().info('Activating...')
+        self.subscription = self.create_subscription(
+            Twist, 'cmd_vel', self.cmd_vel_callback, 10
+        )
+        return TransitionCallbackReturn.SUCCESS
+
+    def on_deactivate(self, state: State) -> TransitionCallbackReturn:
+        """모터 정지, 구독 해제"""
+        self.get_logger().info('Deactivating...')
+        self.stop_motors()
+        self.destroy_subscription(self.subscription)
+        return TransitionCallbackReturn.SUCCESS
+
+    def on_cleanup(self, state: State) -> TransitionCallbackReturn:
+        """리소스 해제"""
+        self.get_logger().info('Cleaning up...')
+        self.kit = None
+        return TransitionCallbackReturn.SUCCESS
+
+    def on_shutdown(self, state: State) -> TransitionCallbackReturn:
+        """최종 종료"""
+        self.get_logger().info('Shutting down...')
+        return TransitionCallbackReturn.SUCCESS</code></pre>
+
+<pre><code># Lifecycle 노드 제어
+ros2 lifecycle list /motor_driver_lifecycle
+ros2 lifecycle set /motor_driver_lifecycle configure
+ros2 lifecycle set /motor_driver_lifecycle activate
+ros2 lifecycle set /motor_driver_lifecycle deactivate
+ros2 lifecycle set /motor_driver_lifecycle shutdown</code></pre>
+
+                <h2 id="composition">노드 컴포지션</h2>
+                <p>
+                    여러 노드를 단일 프로세스에서 실행하여 오버헤드를 줄입니다.
+                    Intra-process 통신과 결합하면 Zero-Copy가 가능합니다.
+                </p>
+
+                <div class="diagram">
+┌───────────────────────────────────────────────────────────────┐
+│                 WITHOUT COMPOSITION                            │
+│   ┌─────────┐    ┌─────────┐    ┌─────────┐    ┌─────────┐   │
+│   │Process 1│    │Process 2│    │Process 3│    │Process 4│   │
+│   │ Node A  │───▶│ Node B  │───▶│ Node C  │───▶│ Node D  │   │
+│   └─────────┘    └─────────┘    └─────────┘    └─────────┘   │
+│                  (IPC Overhead)                               │
+└───────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────────┐
+│                  WITH COMPOSITION                              │
+│   ┌─────────────────────────────────────────────────────────┐ │
+│   │                    Single Process                        │ │
+│   │   ┌────────┐   ┌────────┐   ┌────────┐   ┌────────┐    │ │
+│   │   │ Node A │──▶│ Node B │──▶│ Node C │──▶│ Node D │    │ │
+│   │   └────────┘   └────────┘   └────────┘   └────────┘    │ │
+│   │              (Intra-process, Zero-Copy)                  │ │
+│   └─────────────────────────────────────────────────────────┘ │
+└───────────────────────────────────────────────────────────────┘
+                </div>
+
+<pre><code># component_container로 노드 로드
+ros2 run rclcpp_components component_container
+
+# 다른 터미널에서 컴포넌트 로드
+ros2 component load /ComponentManager \
+    composition composition::Talker
+ros2 component load /ComponentManager \
+    composition composition::Listener
+
+# 컴포넌트 목록 확인
+ros2 component list</code></pre>
+
+                <h2 id="executors">Executors 이해</h2>
+                <p>
+                    Executor는 콜백을 실행하는 스케줄러입니다.
+                    싱글 스레드와 멀티 스레드 옵션이 있습니다.
+                </p>
+
+<pre><code>import rclpy
+from rclpy.executors import SingleThreadedExecutor, MultiThreadedExecutor
+
+def main():
+    rclpy.init()
+
+    node1 = MotorDriverNode()
+    node2 = SensorNode()
+
+    # 싱글 스레드 (기본)
+    executor = SingleThreadedExecutor()
+    executor.add_node(node1)
+    executor.add_node(node2)
+
+    # 멀티 스레드 (병렬 콜백)
+    # executor = MultiThreadedExecutor(num_threads=4)
+
+    try:
+        executor.spin()
+    finally:
+        executor.shutdown()
+        rclpy.shutdown()</code></pre>
+
+                <h2 id="callbacks">콜백 그룹</h2>
+                <p>콜백의 동시 실행 여부를 제어합니다.</p>
+
+<pre><code>from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
+
+class CallbackGroupNode(Node):
+    def __init__(self):
+        super().__init__('callback_group_node')
+
+        # 상호 배타적 (동시 실행 불가)
+        self.exclusive_group = MutuallyExclusiveCallbackGroup()
+
+        # 재진입 가능 (동시 실행 허용)
+        self.reentrant_group = ReentrantCallbackGroup()
+
+        # 센서 콜백 - 동시 실행 허용
+        self.sub1 = self.create_subscription(
+            LaserScan, '/scan', self.scan_callback,
+            10, callback_group=self.reentrant_group
+        )
+
+        # 제어 콜백 - 동시 실행 불가
+        self.sub2 = self.create_subscription(
+            Twist, '/cmd_vel', self.cmd_callback,
+            10, callback_group=self.exclusive_group
+        )
+
+        # 타이머 - 제어와 상호 배타
+        self.timer = self.create_timer(
+            0.1, self.timer_callback,
+            callback_group=self.exclusive_group
+        )</code></pre>
+
+                <h2 id="realtime">실시간 ROS 2</h2>
+                <p>
+                    실시간 시스템에서는 결정론적 타이밍이 필요합니다.
+                    ROS 2는 실시간 지원을 위한 여러 기법을 제공합니다.
+                </p>
+
+                <h3>실시간 요구사항</h3>
+                <ul>
+                    <li>동적 메모리 할당 회피</li>
+                    <li>락-프리 통신</li>
+                    <li>우선순위 기반 스케줄링</li>
+                    <li>RT-PREEMPT 커널</li>
+                </ul>
+
+<pre><code># PREEMPT_RT 커널 확인
+uname -a  # PREEMPT_RT 포함 확인
+
+# 실시간 우선순위 설정
+sudo chrt -f 99 ros2 run jetbot_ros2 motor_driver
+
+# CPU affinity 설정
+taskset -c 0 ros2 run jetbot_ros2 motor_driver</code></pre>
+
+                <h3>실시간 노드 설정</h3>
+<pre><code>from rclpy.executors import SingleThreadedExecutor
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy
+
+def main():
+    rclpy.init()
+
+    node = MotorDriverNode()
+    executor = SingleThreadedExecutor()
+    executor.add_node(node)
+
+    # 메모리 프리로드
+    node.pre_allocate_memory()
+
+    # 우선순위 설정 (Linux)
+    import os
+    os.sched_setscheduler(0, os.SCHED_FIFO, os.sched_param(99))
+
+    executor.spin()</code></pre>
+
+                <h2 id="intra-process">Intra-Process 통신</h2>
+                <p>
+                    같은 프로세스 내 노드 간 Zero-Copy 통신으로
+                    지연시간을 최소화합니다.
+                </p>
+
+<pre><code>from rclpy.node import Node
+
+class ImagePublisher(Node):
+    def __init__(self):
+        super().__init__('image_publisher')
+
+        # Intra-process 활성화
+        self.publisher = self.create_publisher(
+            Image,
+            'image',
+            10,
+            # callback_group은 컴포지션과 함께 사용
+        )
+
+    def publish_image(self, img_data):
+        msg = Image()
+        msg.data = img_data
+
+        # loan_message로 Zero-Copy
+        loaned_msg = self.publisher.borrow_loaned_message()
+        loaned_msg.data = img_data
+        self.publisher.publish(loaned_msg)</code></pre>
+
+                <h2 id="colcon">Colcon 빌드 시스템</h2>
+
+<pre><code># 전체 워크스페이스 빌드
+colcon build
+
+# 특정 패키지만 빌드
+colcon build --packages-select jetbot_ros2
+
+# 의존성 포함 빌드
+colcon build --packages-up-to jetbot_ros2
+
+# 빌드 옵션
+colcon build \
+    --symlink-install \           # 심볼릭 링크 (Python 수정 즉시 반영)
+    --cmake-args -DCMAKE_BUILD_TYPE=Release \
+    --parallel-workers 4
+
+# 테스트 실행
+colcon test --packages-select jetbot_ros2
+colcon test-result --verbose</code></pre>
+
+                <h2 id="launch">Launch 시스템 심화</h2>
+
+<pre><code># launch/jetbot_full.launch.py
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
+
+def generate_launch_description():
+    # 런치 인자 선언
+    use_sim = DeclareLaunchArgument(
+        'use_sim',
+        default_value='false',
+        description='Use simulation'
+    )
+
+    robot_name = DeclareLaunchArgument(
+        'robot_name',
+        default_value='jetbot',
+        description='Robot namespace'
+    )
+
+    # 설정 파일 경로
+    config_file = PathJoinSubstitution([
+        FindPackageShare('jetbot_ros2'),
+        'config',
+        'params.yaml'
+    ])
+
+    # 노드 정의
+    motor_driver = Node(
+        package='jetbot_ros2',
+        executable='motor_driver',
+        name='motor_driver',
+        namespace=LaunchConfiguration('robot_name'),
+        parameters=[config_file],
+        remappings=[
+            ('cmd_vel', 'cmd_vel_nav')
+        ],
+        condition=IfCondition(
+            LaunchConfiguration('use_sim').perform(context) == 'false'
+        )
+    )
+
+    # 다른 런치 파일 포함
+    slam_launch = IncludeLaunchDescription(
+        PathJoinSubstitution([
+            FindPackageShare('slam_toolbox'),
+            'launch',
+            'online_async_launch.py'
+        ]),
+        launch_arguments={
+            'use_sim_time': LaunchConfiguration('use_sim')
+        }.items()
+    )
+
+    return LaunchDescription([
+        use_sim,
+        robot_name,
+        motor_driver,
+        slam_launch
+    ])</code></pre>
+
+                <h2 id="debugging">디버깅 기법</h2>
+
+<pre><code># 노드 그래프 시각화
+ros2 run rqt_graph rqt_graph
+
+# TF 트리 시각화
+ros2 run rqt_tf_tree rqt_tf_tree
+
+# 토픽 모니터링
+ros2 run rqt_topic rqt_topic
+
+# 노드 정보
+ros2 node info /motor_driver
+
+# 로그 레벨 변경
+ros2 service call /motor_driver/set_logger_level \
+    rcl_interfaces/srv/SetLoggerLevel \
+    "{logger_name: 'motor_driver', level: 10}"  # DEBUG=10
+
+# bag 녹화/재생
+ros2 bag record -a -o my_bag
+ros2 bag play my_bag
+
+# 성능 프로파일링
+ros2 run tracetools_analysis ros2_tracing</code></pre>
+
+                <!-- ==================== 시각화 도구 ==================== -->
+                <h1 id="rviz" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">RViz 2 시각화</h1>
+                <p>
+                    RViz 2는 ROS 2의 핵심 시각화 도구입니다. 센서 데이터, 로봇 모델,
+                    TF 트리, 지도, 경로 등을 3D로 시각화합니다.
+                </p>
+
+                <h3>RViz 2 설치 및 실행</h3>
+<pre><code># 설치
+sudo apt install ros-humble-rviz2
+
+# 기본 실행
+rviz2
+
+# 설정 파일과 함께 실행
+rviz2 -d ~/jetbot_ws/config/jetbot.rviz</code></pre>
+
+                <h3>주요 Display 타입</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Display</th>
+                            <th>토픽 타입</th>
+                            <th>용도</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>RobotModel</strong></td>
+                            <td>/robot_description</td>
+                            <td>URDF 로봇 모델 시각화</td>
+                        </tr>
+                        <tr>
+                            <td><strong>TF</strong></td>
+                            <td>/tf, /tf_static</td>
+                            <td>좌표계 변환 시각화</td>
+                        </tr>
+                        <tr>
+                            <td><strong>LaserScan</strong></td>
+                            <td>sensor_msgs/LaserScan</td>
+                            <td>2D LiDAR 데이터</td>
+                        </tr>
+                        <tr>
+                            <td><strong>PointCloud2</strong></td>
+                            <td>sensor_msgs/PointCloud2</td>
+                            <td>3D 포인트 클라우드</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Image</strong></td>
+                            <td>sensor_msgs/Image</td>
+                            <td>카메라 이미지</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Map</strong></td>
+                            <td>nav_msgs/OccupancyGrid</td>
+                            <td>2D 점유 격자 지도</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Path</strong></td>
+                            <td>nav_msgs/Path</td>
+                            <td>경로 시각화</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Marker</strong></td>
+                            <td>visualization_msgs/Marker</td>
+                            <td>사용자 정의 마커</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Odometry</strong></td>
+                            <td>nav_msgs/Odometry</td>
+                            <td>로봇 위치/속도</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>RViz 설정 파일 예시</h3>
+<pre><code># config/jetbot.rviz
+Panels:
+  - Class: rviz_common/Displays
+  - Class: rviz_common/Views
+Visualization Manager:
+  Displays:
+    - Class: rviz_default_plugins/RobotModel
+      Name: RobotModel
+      Description Topic: /robot_description
+    - Class: rviz_default_plugins/TF
+      Name: TF
+      Show Names: true
+      Show Axes: true
+    - Class: rviz_default_plugins/LaserScan
+      Name: LaserScan
+      Topic: /scan
+      Size (m): 0.03
+      Color: 0; 255; 0
+    - Class: rviz_default_plugins/Map
+      Name: Map
+      Topic: /map
+      Color Scheme: map
+    - Class: rviz_default_plugins/Path
+      Name: Global Path
+      Topic: /plan
+      Color: 255; 0; 0
+  Global Options:
+    Fixed Frame: map
+    Frame Rate: 30</code></pre>
+
+                <h3>Interactive Marker 사용</h3>
+<pre><code># Nav2 Goal 전송
+ros2 run rviz2 rviz2
+
+# RViz에서:
+# 1. "2D Goal Pose" 버튼 클릭
+# 2. 맵 위에서 목표 위치/방향 지정
+# 3. Nav2가 자동으로 경로 계획 및 주행</code></pre>
+
+                <h2 id="rqt">RQt 도구 모음</h2>
+                <p>
+                    RQt는 Qt 기반의 플러그인 프레임워크로, 다양한 GUI 도구를 제공합니다.
+                </p>
+
+                <div class="diagram">
+┌──────────────────────────────────────────────────────────────────────┐
+│                           RQt TOOLS                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                       │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│   │  rqt_graph   │  │  rqt_topic   │  │     rqt_console          │  │
+│   │  노드 그래프  │  │  토픽 모니터  │  │     로그 뷰어            │  │
+│   └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+│                                                                       │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│   │ rqt_tf_tree  │  │  rqt_plot    │  │   rqt_image_view         │  │
+│   │  TF 트리      │  │  데이터 플롯  │  │   이미지 뷰어            │  │
+│   └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+│                                                                       │
+│   ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│   │rqt_reconfigure│ │ rqt_bag      │  │   rqt_publisher          │  │
+│   │ 파라미터 조정  │  │ Bag 재생     │  │   토픽 발행 GUI          │  │
+│   └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+│                                                                       │
+└──────────────────────────────────────────────────────────────────────┘
+                </div>
+
+<pre><code># RQt 설치
+sudo apt install ros-humble-rqt ros-humble-rqt-common-plugins
+
+# 개별 도구 실행
+rqt_graph              # 노드/토픽 연결 그래프
+rqt_topic              # 토픽 모니터링
+rqt_tf_tree            # TF 트리 시각화
+rqt_plot               # 실시간 데이터 플롯
+rqt_image_view         # 카메라 이미지 뷰어
+rqt_console            # 로그 메시지 뷰어
+rqt_reconfigure        # 동적 파라미터 조정
+
+# 통합 GUI
+rqt</code></pre>
+
+                <h3>rqt_plot 사용 예시</h3>
+<pre><code># 속도 명령 시각화
+rqt_plot /cmd_vel/linear/x /cmd_vel/angular/z
+
+# IMU 데이터 시각화
+rqt_plot /imu/linear_acceleration/x /imu/linear_acceleration/y /imu/linear_acceleration/z</code></pre>
+
+                <h2 id="gazebo">Gazebo 시뮬레이션</h2>
+                <p>
+                    Gazebo는 물리 엔진 기반의 3D 로봇 시뮬레이터입니다.
+                    ROS 2 Humble에서는 Gazebo Fortress (Ignition)를 사용합니다.
+                </p>
+
+<pre><code># Gazebo 설치
+sudo apt install ros-humble-gazebo-ros-pkgs
+
+# 또는 새로운 Ignition Gazebo
+sudo apt install ros-humble-ros-gz
+
+# Gazebo 실행
+gazebo --verbose
+
+# ROS 2 연동 실행
+ros2 launch gazebo_ros gazebo.launch.py</code></pre>
+
+                <h3>JetBot Gazebo 모델</h3>
+<pre><code>&lt;!-- urdf/jetbot_gazebo.urdf.xacro --&gt;
+&lt;robot name="jetbot_gazebo" xmlns:xacro="http://www.ros.org/wiki/xacro"&gt;
+
+  &lt;xacro:include filename="jetbot.urdf.xacro"/&gt;
+
+  &lt;!-- Gazebo 플러그인: 디퍼렌셜 드라이브 --&gt;
+  &lt;gazebo&gt;
+    &lt;plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so"&gt;
+      &lt;ros&gt;
+        &lt;namespace&gt;/jetbot&lt;/namespace&gt;
+      &lt;/ros&gt;
+
+      &lt;left_joint&gt;left_wheel_joint&lt;/left_joint&gt;
+      &lt;right_joint&gt;right_wheel_joint&lt;/right_joint&gt;
+
+      &lt;wheel_separation&gt;0.15&lt;/wheel_separation&gt;
+      &lt;wheel_diameter&gt;0.066&lt;/wheel_diameter&gt;
+
+      &lt;max_wheel_torque&gt;20&lt;/max_wheel_torque&gt;
+      &lt;max_wheel_acceleration&gt;1.0&lt;/max_wheel_acceleration&gt;
+
+      &lt;command_topic&gt;cmd_vel&lt;/command_topic&gt;
+      &lt;odometry_topic&gt;odom&lt;/odometry_topic&gt;
+      &lt;odometry_frame&gt;odom&lt;/odometry_frame&gt;
+      &lt;robot_base_frame&gt;base_link&lt;/robot_base_frame&gt;
+
+      &lt;publish_odom&gt;true&lt;/publish_odom&gt;
+      &lt;publish_odom_tf&gt;true&lt;/publish_odom_tf&gt;
+      &lt;publish_wheel_tf&gt;false&lt;/publish_wheel_tf&gt;
+    &lt;/plugin&gt;
+  &lt;/gazebo&gt;
+
+  &lt;!-- Gazebo 플러그인: LiDAR --&gt;
+  &lt;gazebo reference="laser_frame"&gt;
+    &lt;sensor type="ray" name="lidar"&gt;
+      &lt;pose&gt;0 0 0 0 0 0&lt;/pose&gt;
+      &lt;visualize&gt;true&lt;/visualize&gt;
+      &lt;update_rate&gt;10&lt;/update_rate&gt;
+      &lt;ray&gt;
+        &lt;scan&gt;
+          &lt;horizontal&gt;
+            &lt;samples&gt;360&lt;/samples&gt;
+            &lt;resolution&gt;1&lt;/resolution&gt;
+            &lt;min_angle&gt;-3.14159&lt;/min_angle&gt;
+            &lt;max_angle&gt;3.14159&lt;/max_angle&gt;
+          &lt;/horizontal&gt;
+        &lt;/scan&gt;
+        &lt;range&gt;
+          &lt;min&gt;0.12&lt;/min&gt;
+          &lt;max&gt;12.0&lt;/max&gt;
+          &lt;resolution&gt;0.01&lt;/resolution&gt;
+        &lt;/range&gt;
+      &lt;/ray&gt;
+      &lt;plugin name="scan" filename="libgazebo_ros_ray_sensor.so"&gt;
+        &lt;ros&gt;
+          &lt;remapping&gt;~/out:=scan&lt;/remapping&gt;
+        &lt;/ros&gt;
+        &lt;output_type&gt;sensor_msgs/LaserScan&lt;/output_type&gt;
+        &lt;frame_name&gt;laser_frame&lt;/frame_name&gt;
+      &lt;/plugin&gt;
+    &lt;/sensor&gt;
+  &lt;/gazebo&gt;
+
+  &lt;!-- Gazebo 플러그인: 카메라 --&gt;
+  &lt;gazebo reference="camera_link"&gt;
+    &lt;sensor type="camera" name="camera"&gt;
+      &lt;update_rate&gt;30.0&lt;/update_rate&gt;
+      &lt;camera name="head"&gt;
+        &lt;horizontal_fov&gt;1.3962634&lt;/horizontal_fov&gt;
+        &lt;image&gt;
+          &lt;width&gt;640&lt;/width&gt;
+          &lt;height&gt;480&lt;/height&gt;
+          &lt;format&gt;R8G8B8&lt;/format&gt;
+        &lt;/image&gt;
+      &lt;/camera&gt;
+      &lt;plugin name="camera_controller" filename="libgazebo_ros_camera.so"&gt;
+        &lt;frame_name&gt;camera_link&lt;/frame_name&gt;
+      &lt;/plugin&gt;
+    &lt;/sensor&gt;
+  &lt;/gazebo&gt;
+
+&lt;/robot&gt;</code></pre>
+
+                <!-- ==================== SLAM & Navigation ==================== -->
+                <h1 id="slam-theory" style="margin-top: 4rem; padding-top: 2rem; border-top: 2px solid var(--primary-color);">SLAM 이론</h1>
+                <p>
+                    <strong>SLAM (Simultaneous Localization and Mapping)</strong>은
+                    로봇이 미지의 환경에서 지도를 생성하면서 동시에 자기 위치를 추정하는 기술입니다.
+                </p>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────┐
+│                         SLAM OVERVIEW                                │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│   ┌─────────────┐                     ┌─────────────────────────┐   │
+│   │   Sensors   │                     │         Map             │   │
+│   │  (LiDAR,    │                     │   ┌───┬───┬───┬───┐    │   │
+│   │   Camera,   │                     │   │   │ █ │   │   │    │   │
+│   │   IMU)      │                     │   ├───┼───┼───┼───┤    │   │
+│   └──────┬──────┘                     │   │   │   │   │ █ │    │   │
+│          │                            │   ├───┼───┼───┼───┤    │   │
+│          ▼                            │   │ █ │   │ R │   │    │   │
+│   ┌─────────────┐                     │   ├───┼───┼───┼───┤    │   │
+│   │    SLAM     │────────────────────▶│   │   │ █ │   │   │    │   │
+│   │  Algorithm  │                     │   └───┴───┴───┴───┘    │   │
+│   └──────┬──────┘                     │   R = Robot, █ = Wall  │   │
+│          │                            └─────────────────────────┘   │
+│          ▼                                                          │
+│   ┌─────────────┐                                                   │
+│   │  Localization│                                                  │
+│   │  (x, y, θ)   │                                                  │
+│   └─────────────┘                                                   │
+│                                                                      │
+│   SLAM = P(Map, Pose | Observations, Controls)                      │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                </div>
+
+                <h3>SLAM 알고리즘 종류</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>알고리즘</th>
+                            <th>방식</th>
+                            <th>특징</th>
+                            <th>적합 환경</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>EKF-SLAM</strong></td>
+                            <td>필터 기반</td>
+                            <td>선형 근사, 소규모</td>
+                            <td>작은 실내</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Particle Filter</strong></td>
+                            <td>필터 기반</td>
+                            <td>비선형 처리 가능</td>
+                            <td>실내</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Graph-SLAM</strong></td>
+                            <td>그래프 최적화</td>
+                            <td>대규모, 루프 클로징</td>
+                            <td>대형 건물</td>
+                        </tr>
+                        <tr>
+                            <td><strong>SLAM Toolbox</strong></td>
+                            <td>그래프 최적화</td>
+                            <td>ROS 2 기본, 2D</td>
+                            <td>실내 로봇</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cartographer</strong></td>
+                            <td>그래프 최적화</td>
+                            <td>Google, 2D/3D</td>
+                            <td>대규모</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ORB-SLAM</strong></td>
+                            <td>특징점 기반</td>
+                            <td>Visual SLAM</td>
+                            <td>카메라 기반</td>
+                        </tr>
+                        <tr>
+                            <td><strong>RTAB-Map</strong></td>
+                            <td>RGB-D SLAM</td>
+                            <td>3D, 멀티센서</td>
+                            <td>3D 매핑</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="slam-toolbox">SLAM Toolbox 실전</h2>
+                <p>
+                    SLAM Toolbox는 ROS 2의 기본 2D SLAM 솔루션입니다.
+                    온라인/오프라인 매핑, 위치 추정, 맵 수정을 지원합니다.
+                </p>
+
+<pre><code># 설치
+sudo apt install ros-humble-slam-toolbox
+
+# 온라인 비동기 SLAM (실시간 매핑)
+ros2 launch slam_toolbox online_async_launch.py
+
+# 온라인 동기 SLAM (정확도 우선)
+ros2 launch slam_toolbox online_sync_launch.py
+
+# 오프라인 SLAM (bag 데이터로 매핑)
+ros2 launch slam_toolbox offline_launch.py</code></pre>
+
+                <h3>SLAM Toolbox 설정</h3>
+<pre><code># config/slam_toolbox_params.yaml
+slam_toolbox:
+  ros__parameters:
+    # 기본 프레임
+    odom_frame: odom
+    map_frame: map
+    base_frame: base_link
+    scan_topic: /scan
+    use_scan_matching: true
+    use_scan_barycenter: true
+
+    # 매핑 모드
+    mode: mapping  # mapping, localization, lifelong
+
+    # 스캔 매칭 파라미터
+    resolution: 0.05           # 맵 해상도 (m/cell)
+    max_laser_range: 12.0      # 최대 레이저 거리
+    minimum_travel_distance: 0.5   # 키프레임 거리
+    minimum_travel_heading: 0.5    # 키프레임 회전 (rad)
+
+    # 루프 클로징
+    do_loop_closing: true
+    loop_search_maximum_distance: 3.0
+    loop_match_minimum_chain_size: 10
+
+    # 최적화
+    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
+    ceres_preconditioner: SCHUR_JACOBI
+    ceres_trust_strategy: LEVENBERG_MARQUARDT
+
+    # 스캔 필터
+    minimum_angle: -3.14159
+    maximum_angle: 3.14159
+    minimum_range: 0.1
+    maximum_range: 12.0
+
+    # 성능
+    transform_publish_period: 0.02
+    map_update_interval: 5.0</code></pre>
+
+                <h3>맵 저장 및 로드</h3>
+<pre><code># 맵 저장
+ros2 run nav2_map_server map_saver_cli -f ~/maps/my_room
+
+# 생성되는 파일:
+# - my_room.pgm  (이미지)
+# - my_room.yaml (메타데이터)
+
+# 맵 로드 (위치 추정 모드)
+ros2 launch slam_toolbox localization_launch.py \
+    map_file_name:=/home/user/maps/my_room
+
+# Map Server로 로드
+ros2 run nav2_map_server map_server \
+    --ros-args -p yaml_filename:=~/maps/my_room.yaml</code></pre>
+
+                <h2 id="cartographer">Google Cartographer</h2>
+                <p>
+                    Cartographer는 Google에서 개발한 SLAM 라이브러리로,
+                    대규모 환경에서 정확한 2D/3D 매핑을 제공합니다.
+                </p>
+
+<pre><code># 설치
+sudo apt install ros-humble-cartographer ros-humble-cartographer-ros
+
+# 실행
+ros2 launch cartographer_ros cartographer.launch.py \
+    use_sim_time:=false</code></pre>
+
+                <h3>Cartographer 설정</h3>
+<pre><code>-- config/jetbot_2d.lua
+include "map_builder.lua"
+include "trajectory_builder.lua"
+
+options = {
+  map_builder = MAP_BUILDER,
+  trajectory_builder = TRAJECTORY_BUILDER,
+  map_frame = "map",
+  tracking_frame = "base_link",
+  published_frame = "odom",
+  odom_frame = "odom",
+  provide_odom_frame = false,
+  publish_frame_projected_to_2d = true,
+  use_odometry = true,
+  use_nav_sat = false,
+  use_landmarks = false,
+  num_laser_scans = 1,
+  num_multi_echo_laser_scans = 0,
+  num_subdivisions_per_laser_scan = 1,
+  num_point_clouds = 0,
+  lookup_transform_timeout_sec = 0.2,
+  submap_publish_period_sec = 0.3,
+  pose_publish_period_sec = 5e-3,
+  trajectory_publish_period_sec = 30e-3,
+}
+
+MAP_BUILDER.use_trajectory_builder_2d = true
+MAP_BUILDER.num_background_threads = 4
+
+TRAJECTORY_BUILDER_2D.min_range = 0.1
+TRAJECTORY_BUILDER_2D.max_range = 12.0
+TRAJECTORY_BUILDER_2D.missing_data_ray_length = 5.0
+TRAJECTORY_BUILDER_2D.use_imu_data = false
+TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true
+
+return options</code></pre>
+
+                <h2 id="nav2-deep">Nav2 자율주행 심화</h2>
+                <p>
+                    Nav2 (Navigation 2)는 ROS 2의 자율주행 스택입니다.
+                    경로 계획, 장애물 회피, 행동 트리 기반 내비게이션을 제공합니다.
+                </p>
+
+                <div class="diagram">
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         NAV2 ARCHITECTURE                                │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│   ┌────────────────────────────────────────────────────────────────┐    │
+│   │                    BT Navigator (Behavior Tree)                 │    │
+│   │   ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐  │    │
+│   │   │NavigateTo│  │FollowPath│  │  Spin    │  │  Wait/Backup │  │    │
+│   │   │  Pose    │  │          │  │          │  │              │  │    │
+│   │   └────┬─────┘  └────┬─────┘  └────┬─────┘  └──────┬───────┘  │    │
+│   └────────┼─────────────┼─────────────┼────────────────┼──────────┘    │
+│            │             │             │                │               │
+│   ┌────────▼─────────────▼─────────────▼────────────────▼──────────┐    │
+│   │                         Planner Server                          │    │
+│   │   ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐  │    │
+│   │   │   NavFn      │  │    Smac      │  │  Theta Star        │  │    │
+│   │   │  (Dijkstra/  │  │   (State     │  │  (Any-angle)       │  │    │
+│   │   │   A*)        │  │   Lattice)   │  │                    │  │    │
+│   │   └──────────────┘  └──────────────┘  └────────────────────┘  │    │
+│   └────────────────────────────┬────────────────────────────────────┘    │
+│                                │                                         │
+│   ┌────────────────────────────▼────────────────────────────────────┐    │
+│   │                       Controller Server                          │    │
+│   │   ┌──────────────┐  ┌──────────────┐  ┌────────────────────┐   │    │
+│   │   │     DWB      │  │   Regulated  │  │   MPPI Controller  │   │    │
+│   │   │  (Dynamic    │  │ Pure Pursuit │  │   (Model Predictive│   │    │
+│   │   │   Window)    │  │              │  │    Path Integral)  │   │    │
+│   │   └──────────────┘  └──────────────┘  └────────────────────┘   │    │
+│   └────────────────────────────┬────────────────────────────────────┘    │
+│                                │                                         │
+│   ┌────────────────────────────▼────────────────────────────────────┐    │
+│   │                        Costmap 2D                                │    │
+│   │   ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌──────────┐ │    │
+│   │   │  Static    │  │  Obstacle  │  │  Inflation │  │  Voxel   │ │    │
+│   │   │   Layer    │  │   Layer    │  │   Layer    │  │  Layer   │ │    │
+│   │   └────────────┘  └────────────┘  └────────────┘  └──────────┘ │    │
+│   └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                </div>
+
+<pre><code># Nav2 설치
+sudo apt install ros-humble-navigation2 ros-humble-nav2-bringup
+
+# Nav2 전체 스택 실행
+ros2 launch nav2_bringup navigation_launch.py \
+    use_sim_time:=false \
+    params_file:=config/nav2_params.yaml
+
+# 맵과 함께 실행
+ros2 launch nav2_bringup bringup_launch.py \
+    map:=maps/my_map.yaml \
+    params_file:=config/nav2_params.yaml</code></pre>
+
+                <h2 id="costmap">Costmap 설정</h2>
+                <p>
+                    Costmap은 로봇 주변의 장애물 정보를 나타내는 2D 그리드입니다.
+                    Global Costmap (경로 계획)과 Local Costmap (장애물 회피)이 있습니다.
+                </p>
+
+<pre><code># config/nav2_params.yaml (Costmap 부분)
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      robot_radius: 0.09
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 12.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 10.0
+          obstacle_min_range: 0.0
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.3
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      update_frequency: 5.0
+      publish_frequency: 2.0
+      global_frame: odom
+      robot_base_frame: base_link
+      rolling_window: true
+      width: 3
+      height: 3
+      resolution: 0.05
+      robot_radius: 0.09
+      plugins: ["voxel_layer", "inflation_layer"]
+
+      voxel_layer:
+        plugin: "nav2_costmap_2d::VoxelLayer"
+        enabled: true
+        publish_voxel_map: true
+        origin_z: 0.0
+        z_resolution: 0.05
+        z_voxels: 16
+        max_obstacle_height: 2.0
+        mark_threshold: 0
+        observation_sources: scan
+        scan:
+          topic: /scan
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 3.0
+        inflation_radius: 0.3</code></pre>
+
+                <h2 id="path-planning">경로 계획 알고리즘</h2>
+
+                <h3>Global Planner 비교</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Planner</th>
+                            <th>알고리즘</th>
+                            <th>특징</th>
+                            <th>적합 환경</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>NavFn</strong></td>
+                            <td>Dijkstra/A*</td>
+                            <td>빠름, 기본</td>
+                            <td>일반</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Smac 2D</strong></td>
+                            <td>A*</td>
+                            <td>NavFn 대체</td>
+                            <td>일반</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Smac Hybrid-A*</strong></td>
+                            <td>Hybrid A*</td>
+                            <td>차량 동역학 고려</td>
+                            <td>차량형</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Smac Lattice</strong></td>
+                            <td>State Lattice</td>
+                            <td>고정 프리미티브</td>
+                            <td>복잡 환경</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Theta*</strong></td>
+                            <td>Any-angle</td>
+                            <td>직선 경로</td>
+                            <td>넓은 공간</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Local Controller 비교</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Controller</th>
+                            <th>특징</th>
+                            <th>장점</th>
+                            <th>적합 로봇</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>DWB</strong></td>
+                            <td>Dynamic Window</td>
+                            <td>동적 장애물 회피</td>
+                            <td>일반 이동 로봇</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Regulated Pure Pursuit</strong></td>
+                            <td>Pure Pursuit + 속도 조절</td>
+                            <td>부드러운 경로 추종</td>
+                            <td>JetBot (권장)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>MPPI</strong></td>
+                            <td>Model Predictive</td>
+                            <td>최적 제어, GPU 가속</td>
+                            <td>고성능 로봇</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rotation Shim</strong></td>
+                            <td>제자리 회전</td>
+                            <td>회전 후 직진</td>
+                            <td>좁은 공간</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>JetBot용 Nav2 설정</h3>
+<pre><code># config/nav2_params.yaml (JetBot 최적화)
+bt_navigator:
+  ros__parameters:
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    default_bt_xml_filename: "navigate_w_replanning_and_recovery.xml"
+    plugin_lib_names:
+      - nav2_compute_path_to_pose_action_bt_node
+      - nav2_follow_path_action_bt_node
+      - nav2_back_up_action_bt_node
+      - nav2_spin_action_bt_node
+      - nav2_wait_action_bt_node
+      - nav2_clear_costmap_service_bt_node
+
+planner_server:
+  ros__parameters:
+    planner_plugins: ["GridBased"]
+    GridBased:
+      plugin: "nav2_navfn_planner/NavfnPlanner"
+      tolerance: 0.5
+      use_astar: true
+      allow_unknown: true
+
+controller_server:
+  ros__parameters:
+    controller_frequency: 20.0
+    min_x_velocity_threshold: 0.001
+    min_y_velocity_threshold: 0.5
+    min_theta_velocity_threshold: 0.001
+    progress_checker_plugin: "progress_checker"
+    goal_checker_plugins: ["goal_checker"]
+    controller_plugins: ["FollowPath"]
+
+    # Progress Checker
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
+
+    # Goal Checker
+    goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.1
+      yaw_goal_tolerance: 0.1
+      stateful: true
+
+    # Regulated Pure Pursuit (JetBot 권장)
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.3
+      lookahead_dist: 0.4
+      min_lookahead_dist: 0.3
+      max_lookahead_dist: 0.9
+      lookahead_time: 1.5
+      rotate_to_heading_angular_vel: 0.5
+      transform_tolerance: 0.1
+      use_velocity_scaled_lookahead_dist: false
+      min_approach_linear_velocity: 0.05
+      approach_velocity_scaling_dist: 0.6
+      use_collision_detection: true
+      max_allowed_time_to_collision_up_to_carrot: 1.0
+      use_regulated_linear_velocity_scaling: true
+      use_cost_regulated_linear_velocity_scaling: false
+      regulated_linear_scaling_min_radius: 0.9
+      regulated_linear_scaling_min_speed: 0.25
+      allow_reversing: false
+      max_angular_accel: 1.0
+      max_robot_pose_search_dist: 10.0</code></pre>
+
+                <h3>Nav2 실행 및 목표 전송</h3>
+<pre><code># 터미널 1: Nav2 스택 실행
+ros2 launch nav2_bringup bringup_launch.py \
+    map:=~/maps/my_room.yaml \
+    params_file:=~/jetbot_ws/config/nav2_params.yaml
+
+# 터미널 2: RViz로 시각화 및 목표 전송
+rviz2 -d ~/jetbot_ws/config/nav2_default_view.rviz
+
+# CLI로 목표 전송
+ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
+    "{pose: {header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 2.0, z: 0.0}, orientation: {w: 1.0}}}}"
+
+# 웨이포인트 따라가기
+ros2 action send_goal /follow_waypoints nav2_msgs/action/FollowWaypoints \
+    "{poses: [{header: {frame_id: 'map'}, pose: {position: {x: 1.0, y: 0.0}}}, {header: {frame_id: 'map'}, pose: {position: {x: 2.0, y: 1.0}}}]}"</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>학습 완료!</strong>
+                    ROS 2의 핵심 개념과 SLAM, Navigation을 이해했습니다.
+                    실제 로봇에 적용하면서 더 깊이 학습하세요.
+                </div>
+
+                <h3>추가 학습 자료</h3>
+                <ul>
+                    <li><a href="https://docs.ros.org/en/humble/" target="_blank">ROS 2 Humble Documentation</a></li>
+                    <li><a href="https://navigation.ros.org/" target="_blank">Nav2 Documentation</a></li>
+                    <li><a href="https://design.ros2.org/" target="_blank">ROS 2 Design Documentation</a></li>
+                    <li><a href="https://github.com/ros2/examples" target="_blank">ROS 2 Examples Repository</a></li>
+                </ul>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="ros2.html" class="btn btn-secondary">&larr; 이전: ROS2 구현</a>
+                        <a href="web-tools.html" class="btn btn-primary" style="margin-left: 1rem;">다음: Web Tools &rarr;</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>
