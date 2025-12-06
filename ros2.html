@@ -22,7 +22,15 @@
                 <li><a href="hardware.html">Hardware</a></li>
                 <li><a href="software.html">Software</a></li>
                 <li><a href="ros2.html" class="active">ROS2</a></li>
-                <li><a href="ros-advanced.html">ROS 심화</a></li>
+                <li class="dropdown">
+                    <a href="ros-advanced.html">ROS 심화</a>
+                    <div class="dropdown-menu">
+                        <a href="ros-advanced.html">핵심 개념</a>
+                        <a href="visualization.html">시각화 도구</a>
+                        <a href="slam.html">SLAM</a>
+                        <a href="navigation.html">Navigation</a>
+                    </div>
+                </li>
                 <li><a href="web-tools.html">Web Tools</a></li>
                 <li><a href="reference.html">Reference</a></li>
             </ul>
@@ -542,7 +550,7 @@ def generate_launch_description():
                 <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
                     <p style="text-align: center;">
                         <a href="software.html" class="btn btn-secondary">← 이전: 소프트웨어 설치</a>
-                        <a href="reference.html" class="btn btn-primary" style="margin-left: 1rem;">다음: 참고자료 →</a>
+                        <a href="ros-advanced.html" class="btn btn-primary" style="margin-left: 1rem;">다음: ROS 심화 →</a>
                     </p>
                 </div>
             </article>
