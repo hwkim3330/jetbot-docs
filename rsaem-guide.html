@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSAEM Robot Guide - JetBot ROS2</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-content">
+            <a href="index.html" class="logo">
+                <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI" class="logo-img">
+                <div class="logo-text">
+                    <span class="main">JetBot ROS2</span>
+                    <span class="sub">Orin Nano Guide</span>
+                </div>
+            </a>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="hardware.html">Hardware</a></li>
+                <li><a href="software.html">Software</a></li>
+                <li><a href="ros2.html">ROS2</a></li>
+                <li class="dropdown">
+                    <a href="ros-advanced.html">ROS 심화</a>
+                    <div class="dropdown-menu">
+                        <a href="ros-advanced.html">핵심 개념</a>
+                        <a href="visualization.html">시각화 도구</a>
+                        <a href="slam.html">SLAM</a>
+                        <a href="navigation.html">Navigation</a>
+                    </div>
+                </li>
+                <li><a href="rsaem-guide.html" class="active">RSAEM</a></li>
+                <li><a href="web-tools.html">Web Tools</a></li>
+                <li><a href="reference.html">Reference</a></li>
+            </ul>
+            <a href="https://github.com/hwkim3330/jetbot-docs" class="nav-github" target="_blank">
+                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                </svg>
+                GitHub
+            </a>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="doc-layout">
+            <aside class="doc-sidebar">
+                <h4>RSAEM 로봇</h4>
+                <ul>
+                    <li><a href="#intro" class="active">소개</a></li>
+                    <li><a href="#specs">사양</a></li>
+                    <li><a href="#caution">주의 사항</a></li>
+                </ul>
+                <h4>환경 설정</h4>
+                <ul>
+                    <li><a href="#build">패키지 빌드</a></li>
+                    <li><a href="#bashrc">환경변수 설정</a></li>
+                    <li><a href="#pc-setup">PC 환경 세팅</a></li>
+                </ul>
+                <h4>로봇 제어</h4>
+                <ul>
+                    <li><a href="#teleop-local">로컬 Teleop</a></li>
+                    <li><a href="#bringup-remote">원격 Bringup</a></li>
+                    <li><a href="#remote-control">원격 제어</a></li>
+                </ul>
+                <h4>SLAM 실습</h4>
+                <ul>
+                    <li><a href="#slam-setup">SLAM 환경 준비</a></li>
+                    <li><a href="#slam-mapping">맵 생성</a></li>
+                    <li><a href="#slam-save">맵 저장</a></li>
+                </ul>
+                <h4>Navigation 실습</h4>
+                <ul>
+                    <li><a href="#nav-setup">Nav2 환경 준비</a></li>
+                    <li><a href="#nav-run">자율주행 실행</a></li>
+                    <li><a href="#nav-goal">목표점 설정</a></li>
+                </ul>
+            </aside>
+
+            <article class="doc-content">
+                <div class="breadcrumb">
+                    <a href="index.html">Home</a> / <span>RSAEM Robot Guide</span>
+                </div>
+
+                <h1 id="intro">알쌤로봇 (RSAEM Robot) 사용자 가이드</h1>
+                <p>
+                    <strong>RSAEM 로봇</strong>은 NVIDIA Jetson Orin Nano를 기반으로 한
+                    교육용 ROS2 로봇 플랫폼입니다. ROS2 Humble, Cartographer SLAM, Nav2 Navigation을
+                    지원하며, 2D LiDAR와 Dynamixel 모터를 탑재하고 있습니다.
+                </p>
+
+                <div class="alert alert-info">
+                    <strong>문서 정보</strong>
+                    <ul>
+                        <li><strong>문서 번호:</strong> RS250512011</li>
+                        <li><strong>문서 버전:</strong> RS2505001</li>
+                        <li><strong>작성:</strong> 주식회사 젯슨에이아이</li>
+                    </ul>
+                </div>
+
+                <h2 id="specs">RSAEM 로봇 사양</h2>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>분류</th>
+                            <th>항목</th>
+                            <th>사양</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="3"><strong>소프트웨어</strong></td>
+                            <td>ROS2</td>
+                            <td class="spec-highlight">Humble</td>
+                        </tr>
+                        <tr>
+                            <td>JetPack</td>
+                            <td class="spec-highlight">6.2</td>
+                        </tr>
+                        <tr>
+                            <td>OpenCV</td>
+                            <td>4.8</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="5"><strong>하드웨어</strong></td>
+                            <td>컴퓨팅 모듈</td>
+                            <td class="spec-highlight">Orin Nano</td>
+                        </tr>
+                        <tr>
+                            <td>2D LiDAR</td>
+                            <td>12m 거리 측정</td>
+                        </tr>
+                        <tr>
+                            <td>모터 컨트롤러</td>
+                            <td>하위제어 모터컨트롤러</td>
+                        </tr>
+                        <tr>
+                            <td>모터</td>
+                            <td>ROBOTIS Dynamixel</td>
+                        </tr>
+                        <tr>
+                            <td>카메라</td>
+                            <td>160도 어안카메라</td>
+                        </tr>
+                        <tr>
+                            <td><strong>전원</strong></td>
+                            <td>배터리</td>
+                            <td>8.4V Li-ion</td>
+                        </tr>
+                        <tr>
+                            <td><strong>통신</strong></td>
+                            <td>인터페이스</td>
+                            <td>USB, WiFi, UART, I2C, SPI</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>옵션 구성</h3>
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>분류</th>
+                            <th>항목</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="2"><strong>현재 옵션</strong></td>
+                            <td>IMU</td>
+                        </tr>
+                        <tr>
+                            <td>오디오 기능 쉴드 보드</td>
+                        </tr>
+                        <tr>
+                            <td rowspan="2"><strong>2026년 예정</strong></td>
+                            <td>알쌤 로봇팔 (다이나믹셀)</td>
+                        </tr>
+                        <tr>
+                            <td>미니 LCD</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h2 id="caution">주의 사항</h2>
+
+                <div class="alert alert-danger">
+                    <strong>1. 충전 규격 준수 (필수!)</strong>
+                    <p>반드시 <strong>8.4V 어댑터</strong>로 충전해야 합니다. (판매 시 동봉)</p>
+                    <p>지정된 규격 어댑터로 충전하지 않는 경우 로봇 배터리 시스템 및 전원 시스템의 손상이 일어날 수 있으며,
+                    이 경우 드물게 오린 나노의 전원 장치가 손상될 수 있습니다.</p>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>2. 이동 시 전원 차단</strong>
+                    <p>로봇의 전원이 켜진 상태로 박스에 넣어 이동하지 않습니다. (쇼트 위험)</p>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>3. Pi 카메라 케이블 관리</strong>
+                    <p>Pi 카메라 특성 상 케이블 연결이 느슨해지는 경우 카메라 동작이 되지 않습니다.
+                    연결 상태 유지가 중요하며, 케이블에 손상이 생기면 역시 카메라 동작이 되지 않습니다.</p>
+                </div>
+
+                <div class="alert alert-warning">
+                    <strong>4. USB 과부하 주의</strong>
+                    <p>오린 나노의 USB 포트에 유전원 USB를 연결하는 등 너무 많은 USB를 연결하면 문제가 생길 수 있습니다.</p>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>5. 전원 모드 설정 권장</strong>
+                    <p>배터리 연결하여 사용하는 모빌리티 장비이기 때문에 안정적인 배터리 사용을 위해
+                    오린 나노의 <strong>파워모드를 15W</strong>에 맞추어 사용하는 것을 권장합니다.</p>
+<pre><code># 15W 모드 설정
+sudo nvpmodel -m 0</code></pre>
+                </div>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="build">RSSAEM ROS2 패키지 빌드</h1>
+
+                <h2>패키지 빌드 (소스 전달 후)</h2>
+<pre><code># 워크스페이스로 이동 후 빌드
+cd rssaem_ws
+colcon build</code></pre>
+
+                <h2 id="bashrc">환경변수 설정 (.bashrc)</h2>
+                <p>아래 명령은 <strong>최초 1회만</strong> 실행합니다.</p>
+
+<pre><code># bashrc에 환경 설정 추가
+echo "source ~/rssaem_ws/install/setup.bash" >> ~/.bashrc
+echo "export LIDAR_MODEL=LDS-04" >> ~/.bashrc
+echo "export RSSAEM_MODEL=rssaem" >> ~/.bashrc
+
+# 현재 세션에 적용
+source ~/.bashrc</code></pre>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="teleop-local">로컬 Teleop 테스트</h1>
+
+                <h2>Step 1: RSAEM 로봇 실행</h2>
+<pre><code># 터미널 1: RSAEM Bringup
+# * export LIDAR_MODEL은 bashrc에 있기 때문에 입력하지 않아도 됩니다
+ros2 launch rssaem_bringup rssaem.launch.py</code></pre>
+
+                <h2>Step 2: Teleop 실행 (다른 터미널)</h2>
+<pre><code># 터미널 2: 키보드 텔레오퍼레이션
+ros2 run rssaem_teleop teleop_keyboard</code></pre>
+
+                <div class="alert alert-warning">
+                    <strong>종이컵 테스트 필수!</strong>
+                    <p>바퀴가 땅에 닿지 않도록 <strong>종이컵 위에서</strong> 바퀴가 움직이는지 확인해주세요.</p>
+                </div>
+
+                <h2>Step 3: ROS2 토픽 및 그래프 확인</h2>
+<pre><code># 터미널 3: 토픽 목록 확인
+ros2 topic list
+
+# 노드 연결 관계 확인
+rqt_graph</code></pre>
+
+                <h2>Step 4: RViz2 확인 (다른 터미널)</h2>
+<pre><code># 터미널 4: RViz2 시각화
+ros2 launch rssaem_bringup rviz2.launch.py</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>확인 사항:</strong>
+                    <ul>
+                        <li>RViz 상의 노드들과 TF들을 확인해주세요</li>
+                        <li>LaserScan 데이터가 표시되는지 확인</li>
+                        <li>RobotModel이 올바르게 표시되는지 확인</li>
+                    </ul>
+                </div>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="pc-setup">PC 환경 세팅 (원격 제어용)</h1>
+
+                <h2>로봇 IP 확인</h2>
+<pre><code># 로봇에서 실행
+ifconfig</code></pre>
+
+                <div class="alert alert-warning">
+                    <strong>중요:</strong> 원격 테스트를 위해 로봇의 터미널창을 <strong>모두 닫아주십시오</strong> (필수)
+                    <p>이제 PC에서만 명령을 내리게 됩니다.</p>
+                </div>
+
+                <h2>PC bashrc 수정 (최초 1회)</h2>
+<pre><code># bashrc 편집
+cd
+gedit .bashrc
+
+# 아래 내용 추가 (본인의 ROS_DOMAIN_ID로 수정)
+export ROS_DOMAIN_ID=30
+
+# 저장 후 창 닫기</code></pre>
+
+                <h2>PC 빌드 (소스 복사 후)</h2>
+<pre><code># 워크스페이스로 이동 후 빌드
+cd rssaem_ws
+colcon build
+
+# bashrc에 환경 설정 추가 (최초 1회)
+echo "source ~/rssaem_ws/install/setup.bash" >> ~/.bashrc
+echo "export LIDAR_MODEL=LDS-04" >> ~/.bashrc
+echo "export RSSAEM_MODEL=rssaem" >> ~/.bashrc
+
+source ~/.bashrc</code></pre>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="bringup-remote">원격 Bringup</h1>
+
+                <h2>Step 1: SSH 접속</h2>
+<pre><code># PC에서 로봇으로 SSH 접속
+ssh nvidia@{MY_RSSAEM_BOT_IP}
+
+# 예시
+ssh nvidia@192.168.100.99</code></pre>
+
+                <h2>Step 2: 로봇 Bringup 실행</h2>
+<pre><code># SSH 접속 후 로봇에서 실행
+ros2 launch rssaem_bringup rssaem.launch.py
+
+# 터미널에 에러가 없는지 확인해주세요</code></pre>
+
+                <h2>Step 3: 토픽 확인 (PC의 다른 터미널)</h2>
+<pre><code># PC에서 새 터미널 열고 실행
+ros2 topic list
+
+# 노드 연결 관계 확인
+rqt_graph</code></pre>
+
+                <h2>Step 4: 원격 RViz2 확인</h2>
+<pre><code># PC에서 RViz2 실행
+ros2 launch rssaem_bringup rviz2.rssaem.launch.py</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>확인 사항:</strong>
+                    <ul>
+                        <li>RViz 상의 노드들과 TF들을 확인해주세요</li>
+                        <li>손으로 로봇을 돌려보거나 바닥에서 Teleop으로 이동해보세요</li>
+                    </ul>
+                </div>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="remote-control">원격 제어</h1>
+
+                <h2>Step 1: SSH로 로봇 Bringup</h2>
+<pre><code># PC에서 로봇으로 SSH 접속
+ssh nvidia@{MY_RSSAEM_BOT_IP}
+
+# 로봇에서 Bringup 실행
+ros2 launch rssaem_bringup rssaem.launch.py</code></pre>
+
+                <h2>Step 2: Teleop 실행 (PC의 다른 터미널)</h2>
+<pre><code># PC에서 teleop 실행
+ros2 run rssaem_teleop teleop_keyboard</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>테스트 순서:</strong>
+                    <ol>
+                        <li>동작 여부를 확인</li>
+                        <li>충전 케이블을 뽑고</li>
+                        <li>바닥에서 전진, 후진, 좌회전, 우회전 등 동작을 확인</li>
+                    </ol>
+                </div>
+
+                <p>테스트 완료 후 <strong>모든 창을 닫아주세요.</strong></p>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="slam-setup">SLAM 실습</h1>
+
+                <div class="alert alert-warning">
+                    <strong>환경 준비:</strong>
+                    <ul>
+                        <li>펜스를 <strong>비대칭</strong>으로 설치해주세요</li>
+                        <li>로봇 <strong>시작 위치와 방향</strong>을 기억해주세요 (Nav2에서 사용)</li>
+                    </ul>
+                </div>
+
+                <h2 id="slam-mapping">Step 1: 로봇 Bringup</h2>
+<pre><code># PC에서 SSH 접속
+ssh nvidia@{MY_RSSAEM_BOT_IP}
+
+# 로봇에서 Bringup 실행
+ros2 launch rssaem_bringup rssaem.launch.py</code></pre>
+
+                <h2>Step 2: Cartographer 실행 (다른 터미널)</h2>
+<pre><code># PC에서 Cartographer 실행
+ros2 launch rssaem_cartographer cartographer.launch.py</code></pre>
+
+                <h2>Step 3: Teleop 실행 (다른 터미널)</h2>
+<pre><code># PC에서 teleop 실행
+ros2 run rssaem_teleop teleop_keyboard</code></pre>
+
+                <div class="alert alert-info">
+                    <strong>매핑 팁:</strong>
+                    <ul>
+                        <li>Teleop을 이용하여 맵을 완성합니다</li>
+                        <li>로봇 속도는 <strong>0.3 이하</strong>로 천천히 진행해야 rf2o odom이 깨끗한 지도를 만드는데 도움이 됩니다</li>
+                        <li>검은 색 테두리로 <strong>폐쇄 공간</strong>이 될 수 있도록 해주십시오</li>
+                        <li>같은 장소를 다시 방문하면 루프 클로징이 됩니다</li>
+                    </ul>
+                </div>
+
+                <h2 id="slam-save">Step 4: 맵 저장 (다른 터미널)</h2>
+<pre><code># PC에서 맵 저장
+ros2 run nav2_map_server map_saver_cli -f ~/map
+
+# 생성되는 파일:
+# - ~/map.pgm (이미지 파일)
+# - ~/map.yaml (메타데이터)</code></pre>
+
+                <div class="alert alert-success">
+                    <strong>저장 완료:</strong> 저장 후 모든 창을 닫아주세요.
+                </div>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1 id="nav-setup">Nav2 실습</h1>
+
+                <div class="alert alert-warning">
+                    <strong>중요:</strong> SLAM 때 사용한 <strong>처음 위치와 방향</strong>에 로봇을 위치시켜주세요!
+                </div>
+
+                <h2 id="nav-run">Step 1: 로봇 Bringup</h2>
+<pre><code># PC에서 SSH 접속
+ssh nvidia@{MY_RSSAEM_BOT_IP}
+
+# 로봇에서 Bringup 실행
+ros2 launch rssaem_bringup rssaem.launch.py</code></pre>
+
+                <h2>Step 2: Nav2 실행 (다른 터미널)</h2>
+<pre><code># PC에서 Navigation2 실행 (저장한 맵 사용)
+ros2 launch rssaem_navigation2 navigation2.launch.py map:=$HOME/map.yaml</code></pre>
+
+                <h2 id="nav-goal">Step 3: 목표점 설정</h2>
+                <p>RViz2가 자동으로 실행됩니다. 다음 기능을 사용할 수 있습니다:</p>
+
+                <div class="alert alert-info">
+                    <strong>RViz2 Navigation Panel 기능:</strong>
+                    <ul>
+                        <li><strong>2D Pose Estimate:</strong> 초기 위치 설정 (로봇 위치가 맞지 않을 때)</li>
+                        <li><strong>Nav2 Goal:</strong> 목표 위치 설정 (클릭 후 드래그로 방향 지정)</li>
+                        <li><strong>Waypoint / Nav Through Poses Mode:</strong> 다중 경유점 설정</li>
+                    </ul>
+                </div>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>Navigation 2 Panel 항목</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Navigation</strong></td>
+                            <td>active / inactive 상태 표시</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Localization</strong></td>
+                            <td>active / inactive 상태 표시</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Feedback</strong></td>
+                            <td>unknown / reached / navigating 상태</td>
+                        </tr>
+                        <tr>
+                            <td><strong>ETA</strong></td>
+                            <td>예상 도착 시간</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Distance remaining</strong></td>
+                            <td>남은 거리 (m)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Time taken</strong></td>
+                            <td>소요 시간</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recoveries</strong></td>
+                            <td>복구 동작 횟수</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success">
+                    <strong>성공!</strong>
+                    <p>Feedback이 <strong>"reached"</strong>로 표시되면 목표 지점에 도착한 것입니다.</p>
+                </div>
+
+                <hr style="margin: 3rem 0; border-color: var(--border-color);">
+
+                <h1>RSAEM 명령어 요약</h1>
+
+                <table class="specs-table">
+                    <thead>
+                        <tr>
+                            <th>작업</th>
+                            <th>명령어</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>빌드</strong></td>
+                            <td><code>cd rssaem_ws && colcon build</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>로봇 Bringup</strong></td>
+                            <td><code>ros2 launch rssaem_bringup rssaem.launch.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Teleop</strong></td>
+                            <td><code>ros2 run rssaem_teleop teleop_keyboard</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RViz2 (로컬)</strong></td>
+                            <td><code>ros2 launch rssaem_bringup rviz2.launch.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>RViz2 (원격)</strong></td>
+                            <td><code>ros2 launch rssaem_bringup rviz2.rssaem.launch.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cartographer SLAM</strong></td>
+                            <td><code>ros2 launch rssaem_cartographer cartographer.launch.py</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>맵 저장</strong></td>
+                            <td><code>ros2 run nav2_map_server map_saver_cli -f ~/map</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Nav2 실행</strong></td>
+                            <td><code>ros2 launch rssaem_navigation2 navigation2.launch.py map:=$HOME/map.yaml</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>토픽 목록</strong></td>
+                            <td><code>ros2 topic list</code></td>
+                        </tr>
+                        <tr>
+                            <td><strong>노드 그래프</strong></td>
+                            <td><code>rqt_graph</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color);">
+                    <p style="text-align: center;">
+                        <a href="navigation.html" class="btn btn-secondary">&larr; Navigation</a>
+                        <a href="web-tools.html" class="btn btn-primary" style="margin-left: 1rem;">Web Tools &rarr;</a>
+                    </p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-logo">
+            <img src="https://raw.githubusercontent.com/hwkim3330/roii/refs/heads/main/keti.png" alt="KETI">
+        </div>
+        <p>
+            JetBot ROS2 Documentation &copy; 2024 KETI |
+            <a href="https://github.com/hwkim3330/jetbot-docs" target="_blank">GitHub</a>
+        </p>
+    </footer>
+</body>
+</html>
